@@ -1,0 +1,16 @@
+spring:
+  application:
+    name: sdp-product-service
+  messages:
+    basename: locales/messages
+  profiles:
+#    active: ${PROFILES_ACTIVE:}
+    active: dev
+app:
+  version: v1
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /docs
+  override-with-generic-response: false

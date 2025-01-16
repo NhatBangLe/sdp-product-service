@@ -1,0 +1,13 @@
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/product_service
+    username: admin
+    password: admin
+  data:
+    redis:
+      url: redis://localhost:6379
+eureka:
+  client:
+    enabled: false
+  instance:
+    hostname: localhost

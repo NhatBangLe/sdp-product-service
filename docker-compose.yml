@@ -1,0 +1,34 @@
+name: sdp-product-services
+services:
+  sdp-product-db:
+    image: mysql:8.1
+    container_name: sdp-product-db
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_USER=admin
+      - MYSQL_PASSWORD=admin
+      - MYSQL_DATABASE=product_service
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - sdp-network
+  sdp-redis-stack:
+    image: redis/redis-stack:7.4.0-v1
+    container_name: sdp-redis
+    ports:
+      - "6379:6379"
+      - "8001:8001"
+    volumes:
+      - redis-data:/data
+    networks:
+      - sdp-network
+networks:
+  sdp-network:
+    name: sdp-network
+volumes:
+  mysql-data:
+    name: mysql-data
+  redis-data:
+    name: redis-data
