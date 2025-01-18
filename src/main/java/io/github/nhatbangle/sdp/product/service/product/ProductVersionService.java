@@ -70,17 +70,14 @@ public class ProductVersionService {
     public void updateVersion(
             @NotNull @UUID String versionId,
             @NotNull @Valid ProductVersionUpdatingRequest request
-    ) {
+    ) throws IllegalArgumentException {
         var version = getVersion(versionId);
         version.setName(request.versionName());
         versionRepository.save(version);
     }
 
-    public void deleteVersion(
-            @NotNull @UUID String versionId
-    ) throws IllegalArgumentException {
-        var version = getVersion(versionId);
-        versionRepository.delete(version);
+    public void deleteVersion(@NotNull @UUID String versionId) {
+        versionRepository.deleteById(versionId);
     }
 
 }

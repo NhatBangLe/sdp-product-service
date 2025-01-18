@@ -52,8 +52,8 @@ public class ProductController {
     public ProductResponse createProduct(
             @RequestBody @Valid ProductCreatingRequest body
     ) {
-        var label = service.createProduct(body);
-        return mapper.toResponse(label);
+        var product = service.createProduct(body);
+        return mapper.toResponse(product);
     }
 
     @PutMapping("/{productId}")

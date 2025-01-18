@@ -70,7 +70,7 @@ public class ProductService {
     public void updateProduct(
             @NotNull @UUID String productId,
             @NotNull @Valid ProductUpdatingRequest body
-    ) {
+    ) throws IllegalArgumentException {
         var product = getProduct(productId);
         product.setName(body.name());
         product.setDescription(body.description());
@@ -78,8 +78,7 @@ public class ProductService {
     }
 
     public void deleteProduct(@NotNull @UUID String productId) {
-        var product = getProduct(productId);
-        productRepository.delete(product);
+        productRepository.deleteById(productId);
     }
 
 }

@@ -76,11 +76,8 @@ public class ModuleVersionService {
         versionRepository.save(version);
     }
 
-    public void deleteVersion(
-            @NotNull @UUID String versionId
-    ) throws IllegalArgumentException {
-        var version = getVersion(versionId);
-        versionRepository.delete(version);
+    public void deleteVersion(@NotNull @UUID String versionId) {
+        versionRepository.deleteById(versionId);
     }
 
 }

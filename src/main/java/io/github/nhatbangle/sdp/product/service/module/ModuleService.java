@@ -80,8 +80,7 @@ public class ModuleService {
     }
 
     public void deleteModule(@NotNull @UUID String moduleId) {
-        var module = getModule(moduleId);
-        moduleRepository.delete(module);
+        moduleRepository.deleteById(moduleId);
     }
 
 }

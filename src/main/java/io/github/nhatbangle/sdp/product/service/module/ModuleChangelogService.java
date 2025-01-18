@@ -94,8 +94,7 @@ public class ModuleChangelogService {
     }
 
     public void deleteChangelog(@NotNull @UUID String changelogId) {
-        var product = getChangelog(changelogId);
-        changelogRepository.delete(product);
+        changelogRepository.deleteById(changelogId);
     }
 
     private Set<ModuleChangelogHasAttachment> convertIdToChangelogAttachment(

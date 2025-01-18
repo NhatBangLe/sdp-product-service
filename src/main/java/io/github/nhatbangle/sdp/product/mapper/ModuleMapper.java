@@ -1,15 +1,11 @@
 package io.github.nhatbangle.sdp.product.mapper;
 
 import io.github.nhatbangle.sdp.product.dto.response.*;
+import io.github.nhatbangle.sdp.product.entity.module.*;
 import io.github.nhatbangle.sdp.product.entity.module.Module;
-import io.github.nhatbangle.sdp.product.entity.module.ModuleChangelog;
-import io.github.nhatbangle.sdp.product.entity.module.ModuleChangelogHasAttachment;
-import io.github.nhatbangle.sdp.product.entity.module.ModuleVersion;
-import io.github.nhatbangle.sdp.product.entity.product.*;
 import lombok.RequiredArgsConstructor;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Objects;
 
 @RequiredArgsConstructor
@@ -62,26 +58,23 @@ public final class ModuleMapper implements IEntityMapper<Module, ModuleResponse>
         );
     }
 
-    public ProductDocumentResponse toResponse(ProductDocument document) {
+    public ModuleDocumentResponse toResponse(ModuleDocument document) {
         var updatedAt = document.getUpdatedAt();
-        var product = document.getProduct();
+        var product = document.getModule();
 
         var labels = document.getLabels();
-        List<DocumentLabelResponse> labelResponses = null;
-        if (labels != null)
-            labelResponses = labels.stream()
-                    .map(obj -> mapper.toResponse(obj.getLabel()))
-                    .toList();
+        var labelResponses = labels != null ? labels.stream()
+                .map(obj -> mapper.toResponse(obj.getLabel()))
+                .toList() : null;
 
         var attachments = document.getAttachments();
-        List<AttachmentResponse> attachmentResponses = null;
-        if (attachments != null)
-            attachmentResponses = attachments.stream().map(obj -> new AttachmentResponse(
-                    obj.getAttachment().getId(),
-                    Objects.requireNonNull(obj.getCreatedAt()).toEpochMilli())
-            ).toList();
+        var attachmentResponses = attachments != null ? attachments.stream()
+                .map(obj -> new AttachmentResponse(
+                        obj.getAttachment().getId(),
+                        Objects.requireNonNull(obj.getCreatedAt()).toEpochMilli())
+                ).toList() : null;
 
-        return new ProductDocumentResponse(
+        return new ModuleDocumentResponse(
                 document.getId(),
                 document.getTitle(),
                 document.getDescription(),

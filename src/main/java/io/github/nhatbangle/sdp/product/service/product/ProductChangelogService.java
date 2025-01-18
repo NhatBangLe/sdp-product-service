@@ -84,7 +84,7 @@ public class ProductChangelogService {
     public void updateChangelog(
             @NotNull @UUID String changelogId,
             @NotNull @Valid ProductChangelogUpdatingRequest request
-    ) {
+    ) throws IllegalArgumentException {
         var changelog = getChangelog(changelogId);
         changelog.setTitle(request.title());
         changelog.setDescription(request.description());
@@ -95,8 +95,7 @@ public class ProductChangelogService {
     }
 
     public void deleteChangelog(@NotNull @UUID String changelogId) {
-        var product = getChangelog(changelogId);
-        changelogRepository.delete(product);
+        changelogRepository.deleteById(changelogId);
     }
 
     private Set<ProductChangelogHasAttachment> convertIdToChangelogAttachment(
