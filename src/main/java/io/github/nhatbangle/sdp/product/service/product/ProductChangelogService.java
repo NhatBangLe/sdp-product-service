@@ -7,7 +7,6 @@ import io.github.nhatbangle.sdp.product.entity.id.ProductChangelogHasAttachmentI
 import io.github.nhatbangle.sdp.product.entity.product.ProductChangelog;
 import io.github.nhatbangle.sdp.product.entity.product.ProductChangelogHasAttachment;
 import io.github.nhatbangle.sdp.product.exception.DataConflictException;
-import io.github.nhatbangle.sdp.product.exception.ServiceUnavailableException;
 import io.github.nhatbangle.sdp.product.repository.product.ProductChangelogRepository;
 import io.github.nhatbangle.sdp.product.service.AttachmentService;
 import jakarta.annotation.Nullable;
@@ -15,6 +14,10 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.validator.constraints.UUID;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.MessageSource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -27,6 +30,7 @@ import java.util.stream.Collectors;
 @Service
 @Validated
 @RequiredArgsConstructor
+@CacheConfig(cacheNames = "product-changelogs")
 public class ProductChangelogService {
 
     private final MessageSource messageSource;
@@ -42,14 +46,19 @@ public class ProductChangelogService {
     ) {
         return changelogRepository.findAllByProductVersion_IdAndTitleContainsIgnoreCase(
                 productVersionId,
-                Objects.requireNonNullElse(title, ""),
+                title,
                 pageable
         );
     }
 
     @NotNull
+    @Cacheable(key = "#changelogId")
     public ProductChangelog getChangelog(@NotNull @UUID String changelogId)
             throws IllegalArgumentException {
+        return findChangelog(changelogId);
+    }
+
+    private ProductChangelog findChangelog(String changelogId) throws IllegalArgumentException {
         return changelogRepository.findById(changelogId).orElseThrow(() -> {
             var message = messageSource.getMessage(
                     "product_changelog.not_found",
@@ -62,10 +71,9 @@ public class ProductChangelogService {
 
     @NotNull
     public ProductChangelog createChangelog(
-            @NotNull @UUID String productVersionId,
             @NotNull @Valid ProductChangelogCreatingRequest request
-    ) throws IllegalArgumentException, ServiceUnavailableException {
-        var productVersion = productVersionService.getVersion(productVersionId);
+    ) throws IllegalArgumentException {
+        var productVersion = productVersionService.getVersion(request.productVersionId());
         var changelog = changelogRepository.save(ProductChangelog.builder()
                 .title(request.title())
                 .description(request.description())
@@ -81,19 +89,22 @@ public class ProductChangelogService {
         return changelog;
     }
 
-    public void updateChangelog(
+    @NotNull
+    @CachePut(key = "#changelogId")
+    public ProductChangelog updateChangelog(
             @NotNull @UUID String changelogId,
             @NotNull @Valid ProductChangelogUpdatingRequest request
     ) throws IllegalArgumentException {
-        var changelog = getChangelog(changelogId);
+        var changelog = findChangelog(changelogId);
         changelog.setTitle(request.title());
         changelog.setDescription(request.description());
         var attachmentIds = request.attachmentIds();
         if (attachmentIds != null)
             changelog.setAttachments(convertIdToChangelogAttachment(changelog, attachmentIds));
-        changelogRepository.save(changelog);
+        return changelogRepository.save(changelog);
     }
 
+    @CacheEvict(key = "#changelogId")
     public void deleteChangelog(@NotNull @UUID String changelogId) {
         changelogRepository.deleteById(changelogId);
     }
@@ -101,7 +112,7 @@ public class ProductChangelogService {
     private Set<ProductChangelogHasAttachment> convertIdToChangelogAttachment(
             @NotNull ProductChangelog changelog,
             @NotNull Set<String> attachmentIds
-    ) {
+    ) throws DataConflictException {
         // validate attachment ids
         attachmentService.validateIds(attachmentIds);
 

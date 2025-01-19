@@ -29,7 +29,7 @@ public class ModuleController {
     public PagingWrapper<ModuleResponse> getAllProductsByUserId(
             @PathVariable @UUID String productVersionId,
             @RequestParam(required = false) String name,
-            @RequestParam(required = false, defaultValue = "true") boolean isUsed,
+            @RequestParam(required = false) Boolean isUsed,
             @RequestParam(required = false, defaultValue = "0") int pageNumber,
             @RequestParam(required = false, defaultValue = "6") int pageSize
     ) {

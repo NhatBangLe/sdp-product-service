@@ -19,7 +19,7 @@ public class AttachmentService {
         return true;
     }
 
-    public void validateIds(Set<String> attachmentIds) {
+    public void validateIds(Set<String> attachmentIds) throws IllegalArgumentException {
         var notExistAttachments = attachmentIds.parallelStream()
                 .filter(id -> !isFileExist(id))
                 .toList();

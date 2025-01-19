@@ -2,19 +2,21 @@ package io.github.nhatbangle.sdp.product.mapper;
 
 import io.github.nhatbangle.sdp.product.dto.response.*;
 import io.github.nhatbangle.sdp.product.entity.product.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
+import org.springframework.validation.annotation.Validated;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 
+@Validated
 @RequiredArgsConstructor
 public final class ProductMapper implements IEntityMapper<Product, ProductResponse> {
 
     private final DocumentLabelMapper mapper;
 
     @Override
-    public ProductResponse toResponse(Product entity) {
+    public @NotNull ProductResponse toResponse(@NotNull Product entity) {
         var updatedAt = entity.getUpdatedAt();
         return new ProductResponse(
                 entity.getId(),
@@ -26,7 +28,8 @@ public final class ProductMapper implements IEntityMapper<Product, ProductRespon
         );
     }
 
-    public ProductVersionResponse toResponse(ProductVersion version) {
+    @NotNull
+    public ProductVersionResponse toResponse(@NotNull ProductVersion version) {
         var updatedAt = version.getUpdatedAt();
         return new ProductVersionResponse(
                 version.getId(),
@@ -37,28 +40,30 @@ public final class ProductMapper implements IEntityMapper<Product, ProductRespon
         );
     }
 
-    public ProductChangelogResponse toResponse(ProductChangelog changelog) {
+    @NotNull
+    public ProductChangelogResponse toResponse(@NotNull ProductChangelog changelog) {
         var updatedAt = changelog.getUpdatedAt();
-        var attachmentIds = Objects.requireNonNullElse(
-                        changelog.getAttachments(),
-                        new HashSet<ProductChangelogHasAttachment>())
-                .stream()
+
+        var attachments = changelog.getAttachments();
+        var attachmentResponses = attachments != null ? attachments.parallelStream()
                 .map(obj -> new AttachmentResponse(
                         obj.getAttachment().getId(),
                         Objects.requireNonNull(obj.getCreatedAt()).toEpochMilli()))
                 .sorted((a, b) -> Math.toIntExact(a.createdAtMillis() - b.createdAtMillis()))
-                .toList();
+                .toList() : null;
+
         return new ProductChangelogResponse(
                 changelog.getId(),
                 changelog.getTitle(),
                 changelog.getDescription(),
                 Objects.requireNonNull(changelog.getCreatedAt()).toEpochMilli(),
                 updatedAt != null ? updatedAt.toEpochMilli() : null,
-                attachmentIds
+                attachmentResponses
         );
     }
 
-    public ProductDocumentResponse toResponse(ProductDocument document) {
+    @NotNull
+    public ProductDocumentResponse toResponse(@NotNull ProductDocument document) {
         var updatedAt = document.getUpdatedAt();
         var product = document.getProduct();
 

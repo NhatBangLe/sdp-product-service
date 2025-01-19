@@ -29,11 +29,12 @@ public class ProductController {
     public PagingWrapper<ProductResponse> getAllProductsByUserId(
             @PathVariable @UUID String userId,
             @RequestParam(required = false) String name,
+            @RequestParam(required = false) Boolean isUsed,
             @RequestParam(required = false, defaultValue = "0") int pageNumber,
             @RequestParam(required = false, defaultValue = "6") int pageSize
     ) {
         var pageable = PageRequest.of(pageNumber, pageSize, Sort.by("createdAt").ascending());
-        var products = service.queryAllProducts(userId, name, pageable);
+        var products = service.queryAllProducts(userId, name, isUsed, pageable);
         return PagingWrapper.fromPage(products)
                 .map(mapper::toResponse);
     }

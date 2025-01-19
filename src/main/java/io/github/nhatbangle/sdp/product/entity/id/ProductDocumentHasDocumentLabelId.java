@@ -1,7 +1,6 @@
 package io.github.nhatbangle.sdp.product.entity.id;
 
 import jakarta.persistence.Embeddable;
-import jakarta.validation.constraints.Min;
 import lombok.*;
 import org.hibernate.Hibernate;
 import jakarta.validation.constraints.NotNull;
@@ -25,9 +24,9 @@ public class ProductDocumentHasDocumentLabelId implements Serializable {
     @NotNull
     private String documentId;
 
-    @Min(0)
+    @UUID
     @NotNull
-    private Integer labelId;
+    private String labelId;
 
     @Override
     public boolean equals(Object o) {

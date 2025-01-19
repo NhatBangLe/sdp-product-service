@@ -29,11 +29,12 @@ public class ModuleVersionController {
     public PagingWrapper<ModuleVersionResponse> getAllVersions(
             @PathVariable @UUID String productId,
             @RequestParam(required = false) String versionName,
+            @RequestParam(required = false) Boolean isUsed,
             @RequestParam(required = false, defaultValue = "0") int pageNumber,
             @RequestParam(required = false, defaultValue = "6") int pageSize
     ) {
         var pageable = PageRequest.of(pageNumber, pageSize, Sort.by("createdAt").ascending());
-        var version = service.queryAllVersions(productId, versionName, pageable);
+        var version = service.queryAllVersions(productId, versionName, isUsed, pageable);
         return PagingWrapper.fromPage(version)
                 .map(mapper::toResponse);
     }

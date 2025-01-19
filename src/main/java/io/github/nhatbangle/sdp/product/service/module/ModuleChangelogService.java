@@ -7,7 +7,7 @@ import io.github.nhatbangle.sdp.product.entity.id.ModuleChangelogHasAttachmentId
 import io.github.nhatbangle.sdp.product.entity.module.ModuleChangelog;
 import io.github.nhatbangle.sdp.product.entity.module.ModuleChangelogHasAttachment;
 import io.github.nhatbangle.sdp.product.exception.DataConflictException;
-import io.github.nhatbangle.sdp.product.repository.ModuleChangelogRepository;
+import io.github.nhatbangle.sdp.product.repository.module.ModuleChangelogRepository;
 import io.github.nhatbangle.sdp.product.service.AttachmentService;
 import jakarta.annotation.Nullable;
 import jakarta.validation.Valid;
@@ -36,12 +36,12 @@ public class ModuleChangelogService {
     @NotNull
     public Page<ModuleChangelog> queryAllChangelogs(
             @NotNull @UUID String moduleVersionId,
-            @Nullable String title,
+            @Nullable String changelogTitle,
             @NotNull Pageable pageable
     ) {
         return changelogRepository.findAllByModuleVersion_IdAndTitleContainsIgnoreCase(
                 moduleVersionId,
-                Objects.requireNonNullElse(title, ""),
+                changelogTitle,
                 pageable
         );
     }
@@ -100,7 +100,7 @@ public class ModuleChangelogService {
     private Set<ModuleChangelogHasAttachment> convertIdToChangelogAttachment(
             @NotNull ModuleChangelog changelog,
             @NotNull Set<String> attachmentIds
-    ) {
+    ) throws DataConflictException {
         // validate attachment ids
         attachmentService.validateIds(attachmentIds);
 

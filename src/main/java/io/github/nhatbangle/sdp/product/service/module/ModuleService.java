@@ -11,6 +11,10 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.validator.constraints.UUID;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.MessageSource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,11 +22,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
 import java.util.Locale;
-import java.util.Objects;
 
 @Service
 @Validated
 @RequiredArgsConstructor
+@CacheConfig(cacheNames = "modules")
 public class ModuleService {
 
     private final MessageSource messageSource;
@@ -32,20 +36,25 @@ public class ModuleService {
     @NotNull
     public Page<Module> queryAllModules(
             @NotNull @UUID String productVersionId,
-            @Nullable String name,
+            @Nullable String moduleName,
             boolean isUsed,
             @NotNull Pageable pageable
     ) {
         return moduleRepository.findAllByProductVersion_IdAndNameContainsIgnoreCaseAndIsUsed(
                 productVersionId,
-                Objects.requireNonNullElse(name, ""),
+                moduleName,
                 isUsed,
                 pageable
         );
     }
 
     @NotNull
-    public Module getModule(@NotNull @UUID String moduleId)
+    @Cacheable(key = "#moduleId")
+    public Module getModule(@NotNull @UUID String moduleId) throws IllegalArgumentException {
+        return findModule(moduleId);
+    }
+
+    private Module findModule(String moduleId)
             throws IllegalArgumentException {
         return moduleRepository.findById(moduleId).orElseThrow(() -> {
             var message = messageSource.getMessage(
@@ -69,16 +78,20 @@ public class ModuleService {
         return moduleRepository.save(module);
     }
 
-    public void updateModule(
+
+    @NotNull
+    @CachePut(key = "#moduleId")
+    public Module updateModule(
             @NotNull @UUID String moduleId,
             @NotNull @Valid ModuleUpdatingRequest body
     ) {
-        var module = getModule(moduleId);
+        var module = findModule(moduleId);
         module.setName(body.name());
         module.setDescription(body.description());
-        moduleRepository.save(module);
+        return moduleRepository.save(module);
     }
 
+    @CacheEvict(key = "#moduleId")
     public void deleteModule(@NotNull @UUID String moduleId) {
         moduleRepository.deleteById(moduleId);
     }

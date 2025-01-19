@@ -11,6 +11,10 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.validator.constraints.UUID;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.MessageSource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,11 +22,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
 import java.util.Locale;
-import java.util.Objects;
 
 @Service
 @Validated
 @RequiredArgsConstructor
+@CacheConfig(cacheNames = "document-labels")
 public class DocumentLabelService {
 
     private final MessageSource messageSource;
@@ -34,7 +38,7 @@ public class DocumentLabelService {
      *
      * @param userId    the id of the user
      * @param labelName the versionName of the label
-     * @return the page of labels
+     * @return the page of labelIds
      */
     @NotNull
     public Page<DocumentLabel> queryAllLabels(
@@ -42,11 +46,7 @@ public class DocumentLabelService {
             @Nullable String labelName,
             @NotNull Pageable pageable
     ) {
-        return repository.findAllByUser_IdAndNameContainsIgnoreCase(
-                userId,
-                Objects.requireNonNullElse(labelName, ""),
-                pageable
-        );
+        return repository.findAllByUser_IdAndNameContainsIgnoreCase(userId, labelName, pageable);
     }
 
     /**
@@ -57,8 +57,12 @@ public class DocumentLabelService {
      * @throws IllegalArgumentException if the label is not found
      */
     @NotNull
-    public DocumentLabel getLabel(@NotNull @UUID String labelId)
-            throws IllegalArgumentException {
+    @Cacheable(key = "#labelId")
+    public DocumentLabel getLabel(@NotNull @UUID String labelId) throws IllegalArgumentException {
+        return findLabel(labelId);
+    }
+
+    private DocumentLabel findLabel(String labelId) throws IllegalArgumentException {
         return repository.findById(labelId).orElseThrow(() -> {
                     var message = messageSource.getMessage(
                             "document_label.not_found",
@@ -100,18 +104,21 @@ public class DocumentLabelService {
      * Update entire a {@link DocumentLabel}
      *
      * @param labelId the id of the label
-     * @param body    the new information of the label
+     * @param request the new information of the label
+     * @return the updated label
      * @throws IllegalArgumentException     if the label is not found
      * @throws ConstraintViolationException if the new information is invalid
      */
-    public void updateLabel(
+    @NotNull
+    @CachePut(key = "#labelId")
+    public DocumentLabel updateLabel(
             @NotNull @UUID String labelId,
-            @NotNull @Valid DocumentLabelUpdatingRequest body
+            @NotNull @Valid DocumentLabelUpdatingRequest request
     ) throws IllegalArgumentException, ConstraintViolationException {
-        var label = getLabel(labelId);
-        label.setName(body.name());
-        label.setDescription(body.description());
-        repository.save(label);
+        var label = findLabel(labelId);
+        label.setName(request.name());
+        label.setDescription(request.description());
+        return repository.save(label);
     }
 
     /**
@@ -119,6 +126,7 @@ public class DocumentLabelService {
      *
      * @param labelId the id of the label
      */
+    @CacheEvict(key = "#labelId")
     public void deleteLabel(@NotNull @UUID String labelId) {
         repository.deleteById(labelId);
     }

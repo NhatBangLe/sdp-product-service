@@ -9,6 +9,10 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.validator.constraints.UUID;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.MessageSource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -16,11 +20,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
 import java.util.Locale;
-import java.util.Objects;
 
 @Service
 @Validated
 @RequiredArgsConstructor
+@CacheConfig(cacheNames = "product-versions")
 public class ProductVersionService {
 
     private final MessageSource messageSource;
@@ -31,18 +35,27 @@ public class ProductVersionService {
     public Page<ProductVersion> queryAllVersions(
             @NotNull @UUID String productId,
             @Nullable String name,
+            @Nullable Boolean isUsed,
             @NotNull Pageable pageable
     ) {
-        return versionRepository.findAllByProduct_IdAndNameContainsIgnoreCase(
+        return versionRepository.findAllByProduct_IdAndNameContainsIgnoreCaseAndIsUsed(
                 productId,
-                Objects.requireNonNullElse(name, ""),
+                name,
+                isUsed,
                 pageable
         );
     }
 
     @NotNull
+    @Cacheable(key = "#versionId")
     public ProductVersion getVersion(
             @NotNull @UUID String versionId
+    ) throws IllegalArgumentException {
+        return findVersion(versionId);
+    }
+
+    private ProductVersion findVersion(
+            String versionId
     ) throws IllegalArgumentException {
         return versionRepository.findById(versionId).orElseThrow(() -> {
             var message = messageSource.getMessage(
@@ -67,15 +80,18 @@ public class ProductVersionService {
         return versionRepository.save(newVersion);
     }
 
-    public void updateVersion(
+    @NotNull
+    @CachePut(key = "#versionId")
+    public ProductVersion updateVersion(
             @NotNull @UUID String versionId,
             @NotNull @Valid ProductVersionUpdatingRequest request
     ) throws IllegalArgumentException {
-        var version = getVersion(versionId);
+        var version = findVersion(versionId);
         version.setName(request.versionName());
-        versionRepository.save(version);
+        return versionRepository.save(version);
     }
 
+    @CacheEvict(key = "#versionId")
     public void deleteVersion(@NotNull @UUID String versionId) {
         versionRepository.deleteById(versionId);
     }

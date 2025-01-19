@@ -47,13 +47,12 @@ public class ProductChangelogController {
         return mapper.toResponse(changelog);
     }
 
-    @PostMapping("/{productVersionId}")
+    @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ProductChangelogResponse createChangelog(
-            @PathVariable @UUID String productVersionId,
             @RequestBody @Valid ProductChangelogCreatingRequest body
     ) {
-        var changelog = service.createChangelog(productVersionId, body);
+        var changelog = service.createChangelog(body);
         return mapper.toResponse(changelog);
     }
 

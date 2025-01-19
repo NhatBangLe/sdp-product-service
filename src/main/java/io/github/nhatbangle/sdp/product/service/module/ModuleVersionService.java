@@ -9,6 +9,10 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.validator.constraints.UUID;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.MessageSource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -16,11 +20,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
 import java.util.Locale;
-import java.util.Objects;
 
 @Service
 @Validated
 @RequiredArgsConstructor
+@CacheConfig(cacheNames = "module-versions")
 public class ModuleVersionService {
 
     private final MessageSource messageSource;
@@ -31,19 +35,24 @@ public class ModuleVersionService {
     public Page<ModuleVersion> queryAllVersions(
             @NotNull @UUID String moduleId,
             @Nullable String name,
+            @Nullable Boolean isUsed,
             @NotNull Pageable pageable
     ) {
-        return versionRepository.findAllByModule_IdAndNameContainsIgnoreCase(
+        return versionRepository.findAllByModule_IdAndNameContainsIgnoreCaseAndIsUsed(
                 moduleId,
-                Objects.requireNonNullElse(name, ""),
+                name,
+                isUsed,
                 pageable
         );
     }
 
     @NotNull
-    public ModuleVersion getVersion(
-            @NotNull @UUID String versionId
-    ) throws IllegalArgumentException {
+    @Cacheable(key = "#versionId")
+    public ModuleVersion getVersion(@NotNull @UUID String versionId) throws IllegalArgumentException {
+        return findVersion(versionId);
+    }
+
+    private ModuleVersion findVersion(String versionId) throws IllegalArgumentException {
         return versionRepository.findById(versionId).orElseThrow(() -> {
             var message = messageSource.getMessage(
                     "module_version.not_found",
@@ -67,15 +76,18 @@ public class ModuleVersionService {
         return versionRepository.save(newVersion);
     }
 
-    public void updateVersion(
+    @NotNull
+    @CachePut(key = "#versionId")
+    public ModuleVersion updateVersion(
             @NotNull @UUID String versionId,
             @NotNull @Valid ModuleVersionUpdatingRequest request
     ) {
-        var version = getVersion(versionId);
+        var version = findVersion(versionId);
         version.setName(request.versionName());
-        versionRepository.save(version);
+        return versionRepository.save(version);
     }
 
+    @CacheEvict(key = "#versionId")
     public void deleteVersion(@NotNull @UUID String versionId) {
         versionRepository.deleteById(versionId);
     }

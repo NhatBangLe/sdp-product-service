@@ -3,18 +3,21 @@ package io.github.nhatbangle.sdp.product.mapper;
 import io.github.nhatbangle.sdp.product.dto.response.*;
 import io.github.nhatbangle.sdp.product.entity.module.*;
 import io.github.nhatbangle.sdp.product.entity.module.Module;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
+import org.springframework.validation.annotation.Validated;
 
 import java.util.HashSet;
 import java.util.Objects;
 
+@Validated
 @RequiredArgsConstructor
 public final class ModuleMapper implements IEntityMapper<Module, ModuleResponse> {
 
     private final DocumentLabelMapper mapper;
 
     @Override
-    public ModuleResponse toResponse(Module entity) {
+    public @NotNull ModuleResponse toResponse(@NotNull Module entity) {
         var updatedAt = entity.getUpdatedAt();
         return new ModuleResponse(
                 entity.getId(),
@@ -26,7 +29,8 @@ public final class ModuleMapper implements IEntityMapper<Module, ModuleResponse>
         );
     }
 
-    public ModuleVersionResponse toResponse(ModuleVersion version) {
+    @NotNull
+    public ModuleVersionResponse toResponse(@NotNull ModuleVersion version) {
         var updatedAt = version.getUpdatedAt();
         return new ModuleVersionResponse(
                 version.getId(),
@@ -37,7 +41,8 @@ public final class ModuleMapper implements IEntityMapper<Module, ModuleResponse>
         );
     }
 
-    public ModuleChangelogResponse toResponse(ModuleChangelog changelog) {
+    @NotNull
+    public ModuleChangelogResponse toResponse(@NotNull ModuleChangelog changelog) {
         var updatedAt = changelog.getUpdatedAt();
         var attachmentIds = Objects.requireNonNullElse(
                         changelog.getAttachments(),
@@ -58,7 +63,8 @@ public final class ModuleMapper implements IEntityMapper<Module, ModuleResponse>
         );
     }
 
-    public ModuleDocumentResponse toResponse(ModuleDocument document) {
+    @NotNull
+    public ModuleDocumentResponse toResponse(@NotNull ModuleDocument document) {
         var updatedAt = document.getUpdatedAt();
         var product = document.getModule();
 
@@ -68,7 +74,7 @@ public final class ModuleMapper implements IEntityMapper<Module, ModuleResponse>
                 .toList() : null;
 
         var attachments = document.getAttachments();
-        var attachmentResponses = attachments != null ? attachments.stream()
+        var attachmentResponses = attachments != null ? attachments.parallelStream()
                 .map(obj -> new AttachmentResponse(
                         obj.getAttachment().getId(),
                         Objects.requireNonNull(obj.getCreatedAt()).toEpochMilli())
