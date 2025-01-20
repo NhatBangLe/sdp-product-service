@@ -7,6 +7,8 @@ import io.github.nhatbangle.sdp.product.dto.response.ProductVersionResponse;
 import io.github.nhatbangle.sdp.product.mapper.ProductMapper;
 import io.github.nhatbangle.sdp.product.service.product.ProductVersionService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.validator.constraints.UUID;
 import org.springframework.data.domain.PageRequest;
@@ -30,8 +32,8 @@ public class ProductVersionController {
             @PathVariable @UUID String productId,
             @RequestParam(required = false) String versionName,
             @RequestParam(required = false) Boolean isUsed,
-            @RequestParam(required = false, defaultValue = "0") int pageNumber,
-            @RequestParam(required = false, defaultValue = "6") int pageSize
+            @RequestParam(required = false, defaultValue = "0") @Min(0) int pageNumber,
+            @RequestParam(required = false, defaultValue = "6") @Min(1) @Max(50) int pageSize
     ) {
         var pageable = PageRequest.of(pageNumber, pageSize, Sort.by("createdAt").ascending());
         var version = service.queryAllVersions(productId, versionName, isUsed, pageable);

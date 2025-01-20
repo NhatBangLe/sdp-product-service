@@ -7,6 +7,8 @@ import io.github.nhatbangle.sdp.product.dto.request.DocumentLabelCreatingRequest
 import io.github.nhatbangle.sdp.product.mapper.DocumentLabelMapper;
 import io.github.nhatbangle.sdp.product.service.DocumentLabelService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.validator.constraints.UUID;
 import org.springframework.data.domain.PageRequest;
@@ -29,8 +31,8 @@ public class DocumentLabelController {
     public PagingWrapper<DocumentLabelResponse> getAllLabels(
             @PathVariable @UUID String userId,
             @RequestParam(required = false) String labelName,
-            @RequestParam(required = false, defaultValue = "0") int pageNumber,
-            @RequestParam(required = false, defaultValue = "6") int pageSize
+            @RequestParam(required = false, defaultValue = "0") @Min(0) int pageNumber,
+            @RequestParam(required = false, defaultValue = "6") @Min(1) @Max(50) int pageSize
     ) {
         var pageable = PageRequest.of(pageNumber, pageSize, Sort.by("createdAt").ascending());
         var labels = service.queryAllLabels(userId, labelName, pageable);
