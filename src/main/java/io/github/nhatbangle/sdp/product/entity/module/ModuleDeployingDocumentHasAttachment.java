@@ -37,7 +37,7 @@ public class ModuleDeployingDocumentHasAttachment implements Serializable {
 
     @NotNull
     @MapsId("attachmentId")
-    @ManyToOne(optional = false, cascade = CascadeType.ALL) // deleting a document cascades to its attachments
+    @ManyToOne(optional = false, cascade = {CascadeType.PERSIST, CascadeType.REMOVE}) // deleting a document cascades to its attachments
     @JoinColumn(name = "ATTACHMENT_id", nullable = false, updatable = false)
     private Attachment attachment;
 

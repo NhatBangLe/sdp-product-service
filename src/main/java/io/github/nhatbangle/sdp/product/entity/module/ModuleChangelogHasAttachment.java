@@ -37,7 +37,7 @@ public class ModuleChangelogHasAttachment implements Serializable {
 
     @NotNull
     @MapsId("attachmentId")
-    @ManyToOne(optional = false, cascade = CascadeType.ALL)
+    @ManyToOne(optional = false, cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
     @JoinColumn(name = "ATTACHMENT_id", nullable = false, updatable = false)
     private Attachment attachment;
 
