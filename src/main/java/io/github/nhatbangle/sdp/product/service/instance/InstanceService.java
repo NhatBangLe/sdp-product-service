@@ -1,14 +1,18 @@
 package io.github.nhatbangle.sdp.product.service.instance;
 
+import io.github.nhatbangle.sdp.product.dto.request.instance.InstanceAlertRequest;
 import io.github.nhatbangle.sdp.product.dto.request.instance.InstanceAttributeRequest;
 import io.github.nhatbangle.sdp.product.dto.request.instance.InstanceCreatingRequest;
 import io.github.nhatbangle.sdp.product.dto.request.instance.InstanceUpdatingRequest;
 import io.github.nhatbangle.sdp.product.entity.instance.Instance;
 import io.github.nhatbangle.sdp.product.entity.instance.InstanceAttribute;
 import io.github.nhatbangle.sdp.product.exception.DataConflictException;
+import io.github.nhatbangle.sdp.product.exception.InvalidKeyException;
 import io.github.nhatbangle.sdp.product.repository.instance.InstanceRepository;
 import io.github.nhatbangle.sdp.product.service.module.ModuleVersionService;
+import io.github.nhatbangle.sdp.product.util.KeyEncryption;
 import jakarta.annotation.Nullable;
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
@@ -105,6 +109,36 @@ public class InstanceService {
     @CacheEvict(key = "#instanceId")
     public void deleteInstance(@NotNull @UUID String instanceId) {
         repository.deleteById(instanceId);
+    }
+
+    @Transactional
+    public void alertInstance(@NotNull @Valid InstanceAlertRequest request)
+            throws InvalidKeyException, IllegalArgumentException {
+        var instanceId = request.instanceId();
+        var instance = findInstance(instanceId);
+
+        if (!KeyEncryption.compare(request.secretKey(), KeyEncryption.crypt(instanceId))) {
+            var message = messageSource.getMessage(
+                    "instance.invalid_key",
+                    new Object[]{instanceId},
+                    Locale.getDefault()
+            );
+            throw new InvalidKeyException(message);
+        }
+
+        var moduleVersion = instance.getModuleVersion();
+        if (!moduleVersion.getIsUsed()) moduleVersion.setIsUsed(true);
+
+        var module = moduleVersion.getModule();
+        if (!module.getIsUsed()) module.setIsUsed(true);
+
+        var productVersion = module.getProductVersion();
+        if (!productVersion.getIsUsed()) productVersion.setIsUsed(true);
+
+        var product = productVersion.getProduct();
+        if (!product.getIsUsed()) product.setIsUsed(true);
+
+        repository.save(instance);
     }
 
     private Set<InstanceAttribute> convertToInstanceAttribute(
