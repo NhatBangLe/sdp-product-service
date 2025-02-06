@@ -60,7 +60,11 @@ public class ProductDocument implements Serializable {
     private Product product;
 
     @NotNull
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(
+            fetch = FetchType.LAZY,
+            optional = false,
+            cascade = {CascadeType.PERSIST, CascadeType.MERGE}
+    )
     @JoinColumn(name = "USER_id", nullable = false, updatable = false)
     private User user;
 

@@ -2,6 +2,7 @@ package io.github.nhatbangle.sdp.product.service.product;
 
 import io.github.nhatbangle.sdp.product.dto.request.product.ProductCreatingRequest;
 import io.github.nhatbangle.sdp.product.dto.request.product.ProductUpdatingRequest;
+import io.github.nhatbangle.sdp.product.entity.User;
 import io.github.nhatbangle.sdp.product.entity.product.Product;
 import io.github.nhatbangle.sdp.product.exception.ServiceUnavailableException;
 import io.github.nhatbangle.sdp.product.repository.product.ProductRepository;
@@ -69,11 +70,14 @@ public class ProductService {
     @NotNull
     public Product createProduct(@NotNull @Valid ProductCreatingRequest request)
             throws IllegalArgumentException, ServiceUnavailableException {
-        var user = userService.getUserById(request.userId());
+        var userId = request.userId();
+        userService.validateUserId(userId);
         var product = Product.builder()
                 .name(request.name())
                 .description(request.description())
-                .user(user)
+                .user(User.builder()
+                        .id(userId)
+                        .build())
                 .build();
         return productRepository.save(product);
     }

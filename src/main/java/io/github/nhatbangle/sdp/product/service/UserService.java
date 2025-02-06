@@ -46,7 +46,7 @@ public class UserService {
      * @throws IllegalArgumentException if the user is not found
      * @throws ServiceUnavailableException if the authentication service is unavailable
      */
-    private void validateUserId(String userId)
+    public void validateUserId(String userId)
             throws IllegalArgumentException, ServiceUnavailableException {
         if (!isUserAvailable(userId)) {
             var message = messageSource.getMessage(

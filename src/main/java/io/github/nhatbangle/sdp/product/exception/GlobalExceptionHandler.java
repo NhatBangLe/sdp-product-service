@@ -25,6 +25,13 @@ public class GlobalExceptionHandler {
         return e.getMessage();
     }
 
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    @ExceptionHandler(InvalidKeyException.class)
+    public String handleInvalidKeyException(InvalidKeyException e) {
+        log.debug(e.getLocalizedMessage(), e.getCause());
+        return e.getMessage();
+    }
+
     @ResponseStatus(HttpStatus.CONFLICT)
     @ExceptionHandler(DataConflictException.class)
     public String handleDataConflictException(DataConflictException e) {
