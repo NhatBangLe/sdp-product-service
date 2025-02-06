@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.*;
 @Validated
 @RestController
 @RequiredArgsConstructor
-@RequestMapping(path = "/api/${app.version}/document/label")
+@RequestMapping(path = "/api/${app.version}/product/document/label")
 public class DocumentLabelController {
 
     private final DocumentLabelService service;
