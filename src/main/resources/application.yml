@@ -1,11 +1,22 @@
 spring:
   application:
-    name: sdp-product-service
+    name: sdp-product
   messages:
     basename: locales/messages
   profiles:
-#    active: ${PROFILES_ACTIVE:}
-    active: dev
+    active: ${PROFILES_ACTIVE:dev}
+  datasource:
+    url: jdbc:mysql://${DB_HOST}:${DB_PORT}/${DB_NAME}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+  data:
+    redis:
+      url: redis://${REDIS_HOST}:${REDIS_PORT}
+eureka:
+  client:
+    enabled: false
+  instance:
+    hostname: localhost
 app:
   version: v1
 springdoc:
