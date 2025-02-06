@@ -11,7 +11,7 @@ import java.util.Objects;
 
 @Validated
 @RequiredArgsConstructor
-public final class ProductMapper implements IEntityMapper<Product, ProductResponse> {
+public class ProductMapper implements IEntityMapper<Product, ProductResponse> {
 
     private final DocumentLabelMapper mapper;
 

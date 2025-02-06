@@ -12,7 +12,7 @@ import java.util.Objects;
 
 @Validated
 @RequiredArgsConstructor
-public final class ModuleMapper implements IEntityMapper<Module, ModuleResponse> {
+public class ModuleMapper implements IEntityMapper<Module, ModuleResponse> {
 
     private final DocumentLabelMapper mapper;
 

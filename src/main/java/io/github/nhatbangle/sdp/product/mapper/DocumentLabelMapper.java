@@ -8,7 +8,7 @@ import org.springframework.validation.annotation.Validated;
 import java.util.Objects;
 
 @Validated
-public final class DocumentLabelMapper implements IEntityMapper<DocumentLabel, DocumentLabelResponse> {
+public class DocumentLabelMapper implements IEntityMapper<DocumentLabel, DocumentLabelResponse> {
 
     @Override
     public @NotNull DocumentLabelResponse toResponse(@NotNull DocumentLabel entity) {
