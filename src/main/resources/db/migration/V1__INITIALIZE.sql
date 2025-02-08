@@ -15,13 +15,13 @@ SET @OLD_SQL_MODE = @@SQL_MODE, SQL_MODE =
 -- -----------------------------------------------------
 -- Schema product_service
 -- -----------------------------------------------------
-CREATE SCHEMA IF NOT EXISTS `product_service`;
-USE `product_service`;
+CREATE SCHEMA IF NOT EXISTS product_db;
+USE product_db;
 
 -- -----------------------------------------------------
 -- Table `product_service`.`USER`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `product_service`.user
+CREATE TABLE IF NOT EXISTS product_db.user
 (
     `id` VARCHAR(36) NOT NULL,
     PRIMARY KEY (`id`)
@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS `product_service`.user
 -- -----------------------------------------------------
 -- Table `product_service`.`PRODUCT`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `product_service`.product
+CREATE TABLE IF NOT EXISTS product_db.product
 (
     `id`          VARCHAR(36)                          NOT NULL,
     `is_used`     BIT(1)                               NOT NULL,
@@ -45,19 +45,19 @@ CREATE TABLE IF NOT EXISTS `product_service`.product
     PRIMARY KEY (`id`),
     CONSTRAINT `fk_PRODUCT_USER1`
         FOREIGN KEY (`USER_id`)
-            REFERENCES `product_service`.user (`id`)
+            REFERENCES product_db.user (`id`)
             ON DELETE NO ACTION
             ON UPDATE NO ACTION
 )
     ENGINE = InnoDB;
 
-CREATE INDEX `fk_PRODUCT_USER1_idx` ON `product_service`.product (`USER_id` ASC) VISIBLE;
+CREATE INDEX `fk_PRODUCT_USER1_idx` ON product_db.product (`USER_id` ASC) VISIBLE;
 
 
 -- -----------------------------------------------------
 -- Table `product_service`.`PRODUCT_VERSION`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `product_service`.product_version
+CREATE TABLE IF NOT EXISTS product_db.product_version
 (
     `id`         VARCHAR(36)        NOT NULL,
     `name`       VARCHAR(255)       NOT NULL,
@@ -68,19 +68,19 @@ CREATE TABLE IF NOT EXISTS `product_service`.product_version
     PRIMARY KEY (`id`),
     CONSTRAINT `fk_MODULE_VERSION_MODULE0`
         FOREIGN KEY (`PRODUCT_id`)
-            REFERENCES `product_service`.product (`id`)
+            REFERENCES product_db.product (`id`)
             ON DELETE NO ACTION
             ON UPDATE NO ACTION
 )
     ENGINE = InnoDB;
 
-CREATE INDEX `fk_MODULE_VERSION_MODULE_idx` ON `product_service`.product_version (`PRODUCT_id` ASC) VISIBLE;
+CREATE INDEX `fk_MODULE_VERSION_MODULE_idx` ON product_db.product_version (`PRODUCT_id` ASC) VISIBLE;
 
 
 -- -----------------------------------------------------
 -- Table `product_service`.`MODULE`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `product_service`.module
+CREATE TABLE IF NOT EXISTS product_db.module
 (
     `id`                 VARCHAR(36)                          NOT NULL,
     `is_used`            BIT(1)                               NOT NULL,
@@ -93,19 +93,19 @@ CREATE TABLE IF NOT EXISTS `product_service`.module
     PRIMARY KEY (`id`),
     CONSTRAINT `fk_MODULE_PRODUCT_VERSION1`
         FOREIGN KEY (`PRODUCT_VERSION_id`)
-            REFERENCES `product_service`.product_version (`id`)
+            REFERENCES product_db.product_version (`id`)
             ON DELETE NO ACTION
             ON UPDATE NO ACTION
 )
     ENGINE = InnoDB;
 
-CREATE INDEX `fk_MODULE_PRODUCT_VERSION1_idx` ON `product_service`.module (`PRODUCT_VERSION_id` ASC) VISIBLE;
+CREATE INDEX `fk_MODULE_PRODUCT_VERSION1_idx` ON product_db.module (`PRODUCT_VERSION_id` ASC) VISIBLE;
 
 
 -- -----------------------------------------------------
 -- Table `product_service`.`MODULE_VERSION`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `product_service`.module_version
+CREATE TABLE IF NOT EXISTS product_db.module_version
 (
     `id`         VARCHAR(36)                          NOT NULL,
     `is_used`    BIT(1)                               NOT NULL,
@@ -116,19 +116,19 @@ CREATE TABLE IF NOT EXISTS `product_service`.module_version
     PRIMARY KEY (`id`),
     CONSTRAINT `fk_MODULE_VERSION_MODULE`
         FOREIGN KEY (`MODULE_id`)
-            REFERENCES `product_service`.module (`id`)
+            REFERENCES product_db.module (`id`)
             ON DELETE NO ACTION
             ON UPDATE NO ACTION
 )
     ENGINE = InnoDB;
 
-CREATE INDEX `fk_MODULE_VERSION_MODULE_idx` ON `product_service`.module_version (`MODULE_id` ASC) VISIBLE;
+CREATE INDEX `fk_MODULE_VERSION_MODULE_idx` ON product_db.module_version (`MODULE_id` ASC) VISIBLE;
 
 
 -- -----------------------------------------------------
 -- Table `product_service`.`INSTANCE`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `product_service`.instance
+CREATE TABLE IF NOT EXISTS product_db.instance
 (
     `id`                VARCHAR(36)                          NOT NULL,
     `is_used`           BIT(1)                               NOT NULL,
@@ -141,19 +141,19 @@ CREATE TABLE IF NOT EXISTS `product_service`.instance
     PRIMARY KEY (`id`),
     CONSTRAINT `fk_INSTANCE_MODULE_VERSION1`
         FOREIGN KEY (`MODULE_VERSION_id`)
-            REFERENCES `product_service`.module_version (`id`)
+            REFERENCES product_db.module_version (`id`)
             ON DELETE NO ACTION
             ON UPDATE NO ACTION
 )
     ENGINE = InnoDB;
 
-CREATE INDEX `fk_INSTANCE_MODULE_VERSION1_idx` ON `product_service`.instance (`MODULE_VERSION_id` ASC) VISIBLE;
+CREATE INDEX `fk_INSTANCE_MODULE_VERSION1_idx` ON product_db.instance (`MODULE_VERSION_id` ASC) VISIBLE;
 
 
 -- -----------------------------------------------------
 -- Table `product_service`.`MODULE_CHANGELOG`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `product_service`.module_changelog
+CREATE TABLE IF NOT EXISTS product_db.module_changelog
 (
     `id`                VARCHAR(36)                          NOT NULL,
     `title`             VARCHAR(150) CHARACTER SET 'utf8mb4' NOT NULL,
@@ -164,19 +164,19 @@ CREATE TABLE IF NOT EXISTS `product_service`.module_changelog
     PRIMARY KEY (`id`),
     CONSTRAINT `fk_MODULE_CHANGELOG_MODULE_VERSION1`
         FOREIGN KEY (`MODULE_VERSION_id`)
-            REFERENCES `product_service`.module_version (`id`)
+            REFERENCES product_db.module_version (`id`)
             ON DELETE NO ACTION
             ON UPDATE NO ACTION
 )
     ENGINE = InnoDB;
 
-CREATE INDEX `fk_MODULE_CHANGELOG_MODULE_VERSION1_idx` ON `product_service`.module_changelog (`MODULE_VERSION_id` ASC) VISIBLE;
+CREATE INDEX `fk_MODULE_CHANGELOG_MODULE_VERSION1_idx` ON product_db.module_changelog (`MODULE_VERSION_id` ASC) VISIBLE;
 
 
 -- -----------------------------------------------------
 -- Table `product_service`.`INSTANCE_ATTRIBUTE`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `product_service`.instance_attribute
+CREATE TABLE IF NOT EXISTS product_db.instance_attribute
 (
     `id`          VARCHAR(36)                          NOT NULL,
     `num_order`   TINYINT UNSIGNED                     NOT NULL,
@@ -186,19 +186,19 @@ CREATE TABLE IF NOT EXISTS `product_service`.instance_attribute
     PRIMARY KEY (`id`),
     CONSTRAINT `fk_INSTANCE_ATTRIBUTE_INSTANCE1`
         FOREIGN KEY (`INSTANCE_id`)
-            REFERENCES `product_service`.instance (`id`)
+            REFERENCES product_db.instance (`id`)
             ON DELETE NO ACTION
             ON UPDATE NO ACTION
 )
     ENGINE = InnoDB;
 
-CREATE INDEX `fk_INSTANCE_ATTRIBUTE_INSTANCE1_idx` ON `product_service`.instance_attribute (`INSTANCE_id` ASC) VISIBLE;
+CREATE INDEX `fk_INSTANCE_ATTRIBUTE_INSTANCE1_idx` ON product_db.instance_attribute (`INSTANCE_id` ASC) VISIBLE;
 
 
 -- -----------------------------------------------------
 -- Table `product_service`.`PRODUCT_CHANGELOG`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `product_service`.product_changelog
+CREATE TABLE IF NOT EXISTS product_db.product_changelog
 (
     `id`                 VARCHAR(36)                          NOT NULL,
     `title`              VARCHAR(150) CHARACTER SET 'utf8mb4' NOT NULL,
@@ -209,19 +209,19 @@ CREATE TABLE IF NOT EXISTS `product_service`.product_changelog
     PRIMARY KEY (`id`),
     CONSTRAINT `fk_PRODUCT_CHANGELOG_PRODUCT_VERSION1`
         FOREIGN KEY (`PRODUCT_VERSION_id`)
-            REFERENCES `product_service`.product_version (`id`)
+            REFERENCES product_db.product_version (`id`)
             ON DELETE NO ACTION
             ON UPDATE NO ACTION
 )
     ENGINE = InnoDB;
 
-CREATE INDEX `fk_PRODUCT_CHANGELOG_PRODUCT_VERSION1_idx` ON `product_service`.product_changelog (`PRODUCT_VERSION_id` ASC) VISIBLE;
+CREATE INDEX `fk_PRODUCT_CHANGELOG_PRODUCT_VERSION1_idx` ON product_db.product_changelog (`PRODUCT_VERSION_id` ASC) VISIBLE;
 
 
 -- -----------------------------------------------------
 -- Table `product_service`.`ATTACHMENT`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `product_service`.attachment
+CREATE TABLE IF NOT EXISTS product_db.attachment
 (
     `id`      VARCHAR(36) NOT NULL,
     PRIMARY KEY (`id`)
@@ -232,7 +232,7 @@ CREATE TABLE IF NOT EXISTS `product_service`.attachment
 -- -----------------------------------------------------
 -- Table `product_service`.`PRODUCT_CHANGELOG_has_ATTACHMENT`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `product_service`.product_changelog_has_attachment
+CREATE TABLE IF NOT EXISTS product_db.product_changelog_has_attachment
 (
     `PRODUCT_CHANGELOG_id` VARCHAR(36) NOT NULL,
     `ATTACHMENT_id`        VARCHAR(36) NOT NULL,
@@ -240,26 +240,26 @@ CREATE TABLE IF NOT EXISTS `product_service`.product_changelog_has_attachment
     PRIMARY KEY (`PRODUCT_CHANGELOG_id`, `ATTACHMENT_id`),
     CONSTRAINT `fk_PRODUCT_CHANGELOG_ATTACHMENT_ATTACHMENT1`
         FOREIGN KEY (`ATTACHMENT_id`)
-            REFERENCES `product_service`.attachment (`id`)
+            REFERENCES product_db.attachment (`id`)
             ON DELETE NO ACTION
             ON UPDATE NO ACTION,
     CONSTRAINT `fk_PRODUCT_CHANGELOG_has_ATTACHMENT_PRODUCT_CHANGELOG1`
         FOREIGN KEY (`PRODUCT_CHANGELOG_id`)
-            REFERENCES `product_service`.product_changelog (`id`)
+            REFERENCES product_db.product_changelog (`id`)
             ON DELETE NO ACTION
             ON UPDATE NO ACTION
 )
     ENGINE = InnoDB;
 
-CREATE INDEX `fk_PRODUCT_CHANGELOG_ATTACHMENT_ATTACHMENT1_idx` ON `product_service`.product_changelog_has_attachment (`ATTACHMENT_id` ASC) VISIBLE;
+CREATE INDEX `fk_PRODUCT_CHANGELOG_ATTACHMENT_ATTACHMENT1_idx` ON product_db.product_changelog_has_attachment (`ATTACHMENT_id` ASC) VISIBLE;
 
-CREATE INDEX `fk_PRODUCT_CHANGELOG_has_ATTACHMENT_PRODUCT_CHANGELOG1_idx` ON `product_service`.product_changelog_has_attachment (`PRODUCT_CHANGELOG_id` ASC) VISIBLE;
+CREATE INDEX `fk_PRODUCT_CHANGELOG_has_ATTACHMENT_PRODUCT_CHANGELOG1_idx` ON product_db.product_changelog_has_attachment (`PRODUCT_CHANGELOG_id` ASC) VISIBLE;
 
 
 -- -----------------------------------------------------
 -- Table `product_service`.`MODULE_CHANGELOG_has_ATTACHMENT`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `product_service`.module_changelog_has_attachment
+CREATE TABLE IF NOT EXISTS product_db.module_changelog_has_attachment
 (
     `ATTACHMENT_id`       VARCHAR(36) NOT NULL,
     `MODULE_CHANGELOG_id` VARCHAR(36) NOT NULL,
@@ -267,26 +267,26 @@ CREATE TABLE IF NOT EXISTS `product_service`.module_changelog_has_attachment
     PRIMARY KEY (`ATTACHMENT_id`, `MODULE_CHANGELOG_id`),
     CONSTRAINT `fk_PRODUCT_CHANGELOG_ATTACHMENT_ATTACHMENT10`
         FOREIGN KEY (`ATTACHMENT_id`)
-            REFERENCES `product_service`.attachment (`id`)
+            REFERENCES product_db.attachment (`id`)
             ON DELETE NO ACTION
             ON UPDATE NO ACTION,
     CONSTRAINT `fk_MODULE_CHANGELOG_has_ATTACHMENT_MODULE_CHANGELOG1`
         FOREIGN KEY (`MODULE_CHANGELOG_id`)
-            REFERENCES `product_service`.module_changelog (`id`)
+            REFERENCES product_db.module_changelog (`id`)
             ON DELETE NO ACTION
             ON UPDATE NO ACTION
 )
     ENGINE = InnoDB;
 
-CREATE INDEX `fk_PRODUCT_CHANGELOG_ATTACHMENT_ATTACHMENT1_idx` ON `product_service`.module_changelog_has_attachment (`ATTACHMENT_id` ASC) VISIBLE;
+CREATE INDEX `fk_PRODUCT_CHANGELOG_ATTACHMENT_ATTACHMENT1_idx` ON product_db.module_changelog_has_attachment (`ATTACHMENT_id` ASC) VISIBLE;
 
-CREATE INDEX `fk_MODULE_CHANGELOG_has_ATTACHMENT_MODULE_CHANGELOG1_idx` ON `product_service`.module_changelog_has_attachment (`MODULE_CHANGELOG_id` ASC) VISIBLE;
+CREATE INDEX `fk_MODULE_CHANGELOG_has_ATTACHMENT_MODULE_CHANGELOG1_idx` ON product_db.module_changelog_has_attachment (`MODULE_CHANGELOG_id` ASC) VISIBLE;
 
 
 -- -----------------------------------------------------
 -- Table `product_service`.`PRODUCT_DOCUMENT`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `product_service`.product_document
+CREATE TABLE IF NOT EXISTS product_db.product_document
 (
     `id`          VARCHAR(36)                          NOT NULL,
     `title`       VARCHAR(150) CHARACTER SET 'utf8mb4' NOT NULL,
@@ -298,26 +298,26 @@ CREATE TABLE IF NOT EXISTS `product_service`.product_document
     PRIMARY KEY (`id`),
     CONSTRAINT `fk_PRODUCT_DOCUMENT_PRODUCT1`
         FOREIGN KEY (`PRODUCT_id`)
-            REFERENCES `product_service`.product (`id`)
+            REFERENCES product_db.product (`id`)
             ON DELETE NO ACTION
             ON UPDATE NO ACTION,
     CONSTRAINT `fk_PRODUCT_DOCUMENT_USER1`
         FOREIGN KEY (`USER_id`)
-            REFERENCES `product_service`.user (`id`)
+            REFERENCES product_db.user (`id`)
             ON DELETE NO ACTION
             ON UPDATE NO ACTION
 )
     ENGINE = InnoDB;
 
-CREATE INDEX `fk_PRODUCT_DOCUMENT_PRODUCT1_idx` ON `product_service`.product_document (`PRODUCT_id` ASC) VISIBLE;
+CREATE INDEX `fk_PRODUCT_DOCUMENT_PRODUCT1_idx` ON product_db.product_document (`PRODUCT_id` ASC) VISIBLE;
 
-CREATE INDEX `fk_PRODUCT_DOCUMENT_USER1_idx` ON `product_service`.product_document (`USER_id` ASC) VISIBLE;
+CREATE INDEX `fk_PRODUCT_DOCUMENT_USER1_idx` ON product_db.product_document (`USER_id` ASC) VISIBLE;
 
 
 -- -----------------------------------------------------
 -- Table `product_service`.`PRODUCT_DOCUMENT_has_ATTACHMENT`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `product_service`.product_document_has_attachment
+CREATE TABLE IF NOT EXISTS product_db.product_document_has_attachment
 (
     `DOCUMENT_id`   VARCHAR(36) NOT NULL,
     `ATTACHMENT_id` VARCHAR(36) NOT NULL,
@@ -325,26 +325,26 @@ CREATE TABLE IF NOT EXISTS `product_service`.product_document_has_attachment
     PRIMARY KEY (`DOCUMENT_id`, `ATTACHMENT_id`),
     CONSTRAINT `fk_PRODUCT_DOCUMENT_has_ATTACHMENT_PRODUCT_DOCUMENT1`
         FOREIGN KEY (`DOCUMENT_id`)
-            REFERENCES `product_service`.product_document (`id`)
+            REFERENCES product_db.product_document (`id`)
             ON DELETE NO ACTION
             ON UPDATE NO ACTION,
     CONSTRAINT `fk_PRODUCT_DOCUMENT_has_ATTACHMENT_ATTACHMENT1`
         FOREIGN KEY (`ATTACHMENT_id`)
-            REFERENCES `product_service`.attachment (`id`)
+            REFERENCES product_db.attachment (`id`)
             ON DELETE NO ACTION
             ON UPDATE NO ACTION
 )
     ENGINE = InnoDB;
 
-CREATE INDEX `fk_PRODUCT_DOCUMENT_has_ATTACHMENT_ATTACHMENT1_idx` ON `product_service`.product_document_has_attachment (`ATTACHMENT_id` ASC) VISIBLE;
+CREATE INDEX `fk_PRODUCT_DOCUMENT_has_ATTACHMENT_ATTACHMENT1_idx` ON product_db.product_document_has_attachment (`ATTACHMENT_id` ASC) VISIBLE;
 
-CREATE INDEX `fk_PRODUCT_DOCUMENT_has_ATTACHMENT_PRODUCT_DOCUMENT1_idx` ON `product_service`.product_document_has_attachment (`DOCUMENT_id` ASC) VISIBLE;
+CREATE INDEX `fk_PRODUCT_DOCUMENT_has_ATTACHMENT_PRODUCT_DOCUMENT1_idx` ON product_db.product_document_has_attachment (`DOCUMENT_id` ASC) VISIBLE;
 
 
 -- -----------------------------------------------------
 -- Table `product_service`.`MODULE_DOCUMENT`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `product_service`.module_document
+CREATE TABLE IF NOT EXISTS product_db.module_document
 (
     `id`          VARCHAR(36)                          NOT NULL,
     `title`       VARCHAR(150) CHARACTER SET 'utf8mb4' NOT NULL,
@@ -356,26 +356,26 @@ CREATE TABLE IF NOT EXISTS `product_service`.module_document
     PRIMARY KEY (`id`),
     CONSTRAINT `fk_MODULE_DOCUMENT_MODULE1`
         FOREIGN KEY (`MODULE_id`)
-            REFERENCES `product_service`.module (`id`)
+            REFERENCES product_db.module (`id`)
             ON DELETE NO ACTION
             ON UPDATE NO ACTION,
     CONSTRAINT `fk_MODULE_DOCUMENT_USER1`
         FOREIGN KEY (`USER_id`)
-            REFERENCES `product_service`.user (`id`)
+            REFERENCES product_db.user (`id`)
             ON DELETE NO ACTION
             ON UPDATE NO ACTION
 )
     ENGINE = InnoDB;
 
-CREATE INDEX `fk_MODULE_DOCUMENT_MODULE1_idx` ON `product_service`.module_document (`MODULE_id` ASC) VISIBLE;
+CREATE INDEX `fk_MODULE_DOCUMENT_MODULE1_idx` ON product_db.module_document (`MODULE_id` ASC) VISIBLE;
 
-CREATE INDEX `fk_MODULE_DOCUMENT_USER1_idx` ON `product_service`.module_document (`USER_id` ASC) VISIBLE;
+CREATE INDEX `fk_MODULE_DOCUMENT_USER1_idx` ON product_db.module_document (`USER_id` ASC) VISIBLE;
 
 
 -- -----------------------------------------------------
 -- Table `product_service`.`DOCUMENT_LABEL`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `product_service`.document_label
+CREATE TABLE IF NOT EXISTS product_db.document_label
 (
     `id`          VARCHAR(36)                          NOT NULL,
     `name`        VARCHAR(100) CHARACTER SET 'utf8mb4' NOT NULL,
@@ -387,18 +387,18 @@ CREATE TABLE IF NOT EXISTS `product_service`.document_label
     PRIMARY KEY (`id`),
     CONSTRAINT `fk_LABEL_USER1`
         FOREIGN KEY (`USER_id`)
-            REFERENCES `product_service`.user (`id`)
+            REFERENCES product_db.user (`id`)
             ON DELETE NO ACTION
             ON UPDATE NO ACTION
 );
 
-CREATE INDEX `fk_LABEL_USER1_idx` ON `product_service`.document_label (`USER_id` ASC) VISIBLE;
+CREATE INDEX `fk_LABEL_USER1_idx` ON product_db.document_label (`USER_id` ASC) VISIBLE;
 
 
 -- -----------------------------------------------------
 -- Table `product_service`.`MODULE_DOCUMENT_has_DOCUMENT_LABEL`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `product_service`.module_document_has_document_label
+CREATE TABLE IF NOT EXISTS product_db.module_document_has_document_label
 (
     `DOCUMENT_id` VARCHAR(36)      NOT NULL,
     `LABEL_id`    VARCHAR(36)      NOT NULL,
@@ -406,26 +406,26 @@ CREATE TABLE IF NOT EXISTS `product_service`.module_document_has_document_label
     PRIMARY KEY (`DOCUMENT_id`, `LABEL_id`),
     CONSTRAINT `fk_MODULE_DOCUMENT_has_LABEL_MODULE_DOCUMENT1`
         FOREIGN KEY (`DOCUMENT_id`)
-            REFERENCES `product_service`.module_document (`id`)
+            REFERENCES product_db.module_document (`id`)
             ON DELETE NO ACTION
             ON UPDATE NO ACTION,
     CONSTRAINT `fk_MODULE_DOCUMENT_has_DOCUMENT_LABEL_DOCUMENT_LABEL1`
         FOREIGN KEY (`LABEL_id`)
-            REFERENCES `product_service`.document_label (`id`)
+            REFERENCES product_db.document_label (`id`)
             ON DELETE NO ACTION
             ON UPDATE NO ACTION
 )
     ENGINE = InnoDB;
 
-CREATE INDEX `fk_MODULE_DOCUMENT_has_LABEL_MODULE_DOCUMENT1_idx` ON `product_service`.module_document_has_document_label (`DOCUMENT_id` ASC) VISIBLE;
+CREATE INDEX `fk_MODULE_DOCUMENT_has_LABEL_MODULE_DOCUMENT1_idx` ON product_db.module_document_has_document_label (`DOCUMENT_id` ASC) VISIBLE;
 
-CREATE INDEX `fk_MODULE_DOCUMENT_has_DOCUMENT_LABEL_LABEL1_idx` ON `product_service`.module_document_has_document_label (`LABEL_id` ASC) VISIBLE;
+CREATE INDEX `fk_MODULE_DOCUMENT_has_DOCUMENT_LABEL_LABEL1_idx` ON product_db.module_document_has_document_label (`LABEL_id` ASC) VISIBLE;
 
 
 -- -----------------------------------------------------
 -- Table `product_service`.`PRODUCT_DOCUMENT_has_DOCUMENT_LABEL`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `product_service`.product_document_has_document_label
+CREATE TABLE IF NOT EXISTS product_db.product_document_has_document_label
 (
     `DOCUMENT_id` VARCHAR(36)      NOT NULL,
     `LABEL_id`    VARCHAR(36)      NOT NULL,
@@ -433,26 +433,26 @@ CREATE TABLE IF NOT EXISTS `product_service`.product_document_has_document_label
     PRIMARY KEY (`DOCUMENT_id`, `LABEL_id`),
     CONSTRAINT `fk_PRODUCT_DOCUMENT_has_LABEL_PRODUCT_DOCUMENT1`
         FOREIGN KEY (`DOCUMENT_id`)
-            REFERENCES `product_service`.product_document (`id`)
+            REFERENCES product_db.product_document (`id`)
             ON DELETE NO ACTION
             ON UPDATE NO ACTION,
     CONSTRAINT `fk_PRODUCT_DOCUMENT_has_DOCUMENT_LABEL_DOCUMENT_LABEL1`
         FOREIGN KEY (`LABEL_id`)
-            REFERENCES `product_service`.document_label (`id`)
+            REFERENCES product_db.document_label (`id`)
             ON DELETE NO ACTION
             ON UPDATE NO ACTION
 )
     ENGINE = InnoDB;
 
-CREATE INDEX `fk_PRODUCT_DOCUMENT_has_LABEL_PRODUCT_DOCUMENT1_idx` ON `product_service`.product_document_has_document_label (`DOCUMENT_id` ASC) VISIBLE;
+CREATE INDEX `fk_PRODUCT_DOCUMENT_has_LABEL_PRODUCT_DOCUMENT1_idx` ON product_db.product_document_has_document_label (`DOCUMENT_id` ASC) VISIBLE;
 
-CREATE INDEX `fk_PRODUCT_DOCUMENT_has_DOCUMENT_LABEL_LABEL1_idx` ON `product_service`.product_document_has_document_label (`LABEL_id` ASC) VISIBLE;
+CREATE INDEX `fk_PRODUCT_DOCUMENT_has_DOCUMENT_LABEL_LABEL1_idx` ON product_db.product_document_has_document_label (`LABEL_id` ASC) VISIBLE;
 
 
 -- -----------------------------------------------------
 -- Table `product_service`.`MODULE_DEPLOYING_DOCUMENT`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `product_service`.module_deploying_document
+CREATE TABLE IF NOT EXISTS product_db.module_deploying_document
 (
     `id`                VARCHAR(36)                          NOT NULL,
     `name`              VARCHAR(150) CHARACTER SET 'utf8mb4' NOT NULL,
@@ -464,25 +464,25 @@ CREATE TABLE IF NOT EXISTS `product_service`.module_deploying_document
     PRIMARY KEY (`id`),
     CONSTRAINT `fk_DEPLOYING_MODULE_DOCUMENT_USER1`
         FOREIGN KEY (`USER_id`)
-            REFERENCES `product_service`.user (`id`)
+            REFERENCES product_db.user (`id`)
             ON DELETE NO ACTION
             ON UPDATE NO ACTION,
     CONSTRAINT `fk_MODULE_DEPLOYING_DOCUMENT_MODULE_VERSION1`
         FOREIGN KEY (`MODULE_VERSION_id`)
-            REFERENCES `product_service`.module_version (`id`)
+            REFERENCES product_db.module_version (`id`)
             ON DELETE NO ACTION
             ON UPDATE NO ACTION
 );
 
-CREATE INDEX `fk_MODULE_DEPLOYING_DOCUMENT_USER1_idx` ON `product_service`.module_deploying_document (`USER_id` ASC) INVISIBLE;
+CREATE INDEX `fk_MODULE_DEPLOYING_DOCUMENT_USER1_idx` ON product_db.module_deploying_document (`USER_id` ASC) INVISIBLE;
 
-CREATE INDEX `fk_MODULE_DEPLOYING_DOCUMENT_MODULE_VERSION1_idx` ON `product_service`.module_deploying_document (`MODULE_VERSION_id` ASC) VISIBLE;
+CREATE INDEX `fk_MODULE_DEPLOYING_DOCUMENT_MODULE_VERSION1_idx` ON product_db.module_deploying_document (`MODULE_VERSION_id` ASC) VISIBLE;
 
 
 -- -----------------------------------------------------
 -- Table `product_service`.`MODULE_DEPLOYING_DOCUMENT_has_ATTACHMENT`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `product_service`.module_deploying_document_has_attachment
+CREATE TABLE IF NOT EXISTS product_db.module_deploying_document_has_attachment
 (
     `DOCUMENT_id`   VARCHAR(36) NOT NULL,
     `ATTACHMENT_id` VARCHAR(36) NOT NULL,
@@ -490,25 +490,25 @@ CREATE TABLE IF NOT EXISTS `product_service`.module_deploying_document_has_attac
     PRIMARY KEY (`DOCUMENT_id`, `ATTACHMENT_id`),
     CONSTRAINT `fk_DEPLOYING_MODULE_DOCUMENT_has_ATTACHMENT_DEPLOYING_MODULE_1`
         FOREIGN KEY (`DOCUMENT_id`)
-            REFERENCES `product_service`.module_deploying_document (`id`)
+            REFERENCES product_db.module_deploying_document (`id`)
             ON DELETE NO ACTION
             ON UPDATE NO ACTION,
     CONSTRAINT `fk_DEPLOYING_MODULE_DOCUMENT_has_ATTACHMENT_ATTACHMENT1`
         FOREIGN KEY (`ATTACHMENT_id`)
-            REFERENCES `product_service`.attachment (`id`)
+            REFERENCES product_db.attachment (`id`)
             ON DELETE NO ACTION
             ON UPDATE NO ACTION
 );
 
-CREATE INDEX `fk_MODULE_DEPLOYING_DOCUMENT_has_ATTACHMENT_ATTACHMENT1_idx` ON `product_service`.module_deploying_document_has_attachment (`ATTACHMENT_id` ASC) VISIBLE;
+CREATE INDEX `fk_MODULE_DEPLOYING_DOCUMENT_has_ATTACHMENT_ATTACHMENT1_idx` ON product_db.module_deploying_document_has_attachment (`ATTACHMENT_id` ASC) VISIBLE;
 
-CREATE INDEX `fk_MODULE_DEPLOYING_DOCUMENT_has_ATTACHMENT_DOCUMENT1_idx` ON `product_service`.module_deploying_document_has_attachment (`DOCUMENT_id` ASC) INVISIBLE;
+CREATE INDEX `fk_MODULE_DEPLOYING_DOCUMENT_has_ATTACHMENT_DOCUMENT1_idx` ON product_db.module_deploying_document_has_attachment (`DOCUMENT_id` ASC) INVISIBLE;
 
 
 -- -----------------------------------------------------
 -- Table `product_service`.`MODULE_DOCUMENT_has_ATTACHMENT`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `product_service`.module_document_has_attachment
+CREATE TABLE IF NOT EXISTS product_db.module_document_has_attachment
 (
     `DOCUMENT_id`   VARCHAR(36) NOT NULL,
     `ATTACHMENT_id` VARCHAR(36) NOT NULL,
@@ -516,20 +516,20 @@ CREATE TABLE IF NOT EXISTS `product_service`.module_document_has_attachment
     PRIMARY KEY (`DOCUMENT_id`, `ATTACHMENT_id`),
     CONSTRAINT `fk_MODULE_DOCUMENT_has_ATTACHMENT_MODULE_DOCUMENT1`
         FOREIGN KEY (`DOCUMENT_id`)
-            REFERENCES `product_service`.module_document (`id`)
+            REFERENCES product_db.module_document (`id`)
             ON DELETE NO ACTION
             ON UPDATE NO ACTION,
     CONSTRAINT `fk_MODULE_DOCUMENT_has_ATTACHMENT_ATTACHMENT1`
         FOREIGN KEY (`ATTACHMENT_id`)
-            REFERENCES `product_service`.attachment (`id`)
+            REFERENCES product_db.attachment (`id`)
             ON DELETE NO ACTION
             ON UPDATE NO ACTION
 )
     ENGINE = InnoDB;
 
-CREATE INDEX `fk_MODULE_DOCUMENT_has_ATTACHMENT_ATTACHMENT1_idx` ON `product_service`.module_document_has_attachment (`ATTACHMENT_id` ASC) VISIBLE;
+CREATE INDEX `fk_MODULE_DOCUMENT_has_ATTACHMENT_ATTACHMENT1_idx` ON product_db.module_document_has_attachment (`ATTACHMENT_id` ASC) VISIBLE;
 
-CREATE INDEX `fk_MODULE_DOCUMENT_has_ATTACHMENT_MODULE_DOCUMENT1_idx` ON `product_service`.module_document_has_attachment (`DOCUMENT_id` ASC) VISIBLE;
+CREATE INDEX `fk_MODULE_DOCUMENT_has_ATTACHMENT_MODULE_DOCUMENT1_idx` ON product_db.module_document_has_attachment (`DOCUMENT_id` ASC) VISIBLE;
 
 SET SQL_MODE = @OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS = @OLD_FOREIGN_KEY_CHECKS;
