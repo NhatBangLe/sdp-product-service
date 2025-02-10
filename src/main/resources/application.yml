@@ -12,6 +12,8 @@ spring:
   data:
     redis:
       url: redis://${REDIS_HOST}:${REDIS_PORT}
+      username: ${REDIS_USERNAME:}
+      password: ${REDIS_PASSWORD:}
 eureka:
   client:
     enabled: false
