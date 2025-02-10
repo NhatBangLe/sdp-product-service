@@ -48,14 +48,14 @@ public class ModuleChangelogService {
 
     @NotNull
     public ModuleChangelog getChangelog(@NotNull @UUID String changelogId)
-            throws IllegalArgumentException {
+            throws NoSuchElementException {
         return changelogRepository.findById(changelogId).orElseThrow(() -> {
             var message = messageSource.getMessage(
                     "module_changelog.not_found",
                     new Object[]{changelogId},
                     Locale.getDefault()
             );
-            return new IllegalArgumentException(message);
+            return new NoSuchElementException(message);
         });
     }
 
@@ -63,7 +63,7 @@ public class ModuleChangelogService {
     public ModuleChangelog createChangelog(
             @NotNull @UUID String moduleVersionId,
             @NotNull @Valid ModuleChangelogCreatingRequest request
-    ) throws IllegalArgumentException {
+    ) throws NoSuchElementException {
         var moduleVersion = moduleVersionService.getVersion(moduleVersionId);
         var changelog = changelogRepository.save(ModuleChangelog.builder()
                 .title(request.title())

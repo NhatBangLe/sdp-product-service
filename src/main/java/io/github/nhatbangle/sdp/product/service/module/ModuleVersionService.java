@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
 import java.util.Locale;
+import java.util.NoSuchElementException;
 
 @Service
 @Validated
@@ -48,18 +49,18 @@ public class ModuleVersionService {
 
     @NotNull
     @Cacheable(key = "#versionId")
-    public ModuleVersion getVersion(@NotNull @UUID String versionId) throws IllegalArgumentException {
+    public ModuleVersion getVersion(@NotNull @UUID String versionId) throws NoSuchElementException {
         return findVersion(versionId);
     }
 
-    private ModuleVersion findVersion(String versionId) throws IllegalArgumentException {
+    private ModuleVersion findVersion(String versionId) throws NoSuchElementException {
         return versionRepository.findById(versionId).orElseThrow(() -> {
             var message = messageSource.getMessage(
                     "module_version.not_found",
                     new Object[]{versionId},
                     Locale.getDefault()
             );
-            return new IllegalArgumentException(message);
+            return new NoSuchElementException(message);
         });
     }
 
@@ -67,7 +68,7 @@ public class ModuleVersionService {
     public ModuleVersion createVersion(
             @NotNull @UUID String productId,
             @NotNull @Valid ModuleVersionCreatingRequest request
-    ) throws IllegalArgumentException {
+    ) throws NoSuchElementException {
         var module = moduleService.getModule(productId);
         var newVersion = ModuleVersion.builder()
                 .name(request.versionName())

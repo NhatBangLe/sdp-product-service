@@ -18,6 +18,7 @@ import org.springframework.validation.annotation.Validated;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.NoSuchElementException;
 
 @Service
 @Validated
@@ -37,11 +38,11 @@ public class InstanceAttributeService {
     @NotNull
     @Cacheable(key = "#attributeId")
     public InstanceAttribute getAttribute(@NotNull @UUID String attributeId)
-            throws IllegalArgumentException {
+            throws NoSuchElementException {
         return findAttribute(attributeId);
     }
 
-    private InstanceAttribute findAttribute(String attributeId) throws IllegalArgumentException {
+    private InstanceAttribute findAttribute(String attributeId) throws NoSuchElementException {
         return repository.findById(attributeId)
                 .orElseThrow(() -> {
                     var message = messageSource.getMessage(
@@ -49,7 +50,7 @@ public class InstanceAttributeService {
                             new Object[]{attributeId},
                             Locale.getDefault()
                     );
-                    return new IllegalArgumentException(message);
+                    return new NoSuchElementException(message);
                 });
     }
 
@@ -70,7 +71,7 @@ public class InstanceAttributeService {
     public InstanceAttribute updateInstance(
             @NotNull @UUID String attributeId,
             @NotNull @Valid InstanceAttributeRequest request
-    ) throws IllegalArgumentException {
+    ) throws NoSuchElementException {
         var attribute = findAttribute(attributeId);
         attribute.setKey(request.key());
         attribute.setValue(request.value());

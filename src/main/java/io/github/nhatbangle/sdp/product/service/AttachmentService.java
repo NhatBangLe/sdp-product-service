@@ -6,6 +6,7 @@ import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
 
 import java.util.Locale;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.StringJoiner;
 
@@ -19,7 +20,7 @@ public class AttachmentService {
         return true;
     }
 
-    public void validateIds(Set<String> attachmentIds) throws IllegalArgumentException {
+    public void validateIds(Set<String> attachmentIds) throws NoSuchElementException {
         var notExistAttachments = attachmentIds.parallelStream()
                 .filter(id -> !isFileExist(id))
                 .toList();
@@ -31,7 +32,7 @@ public class AttachmentService {
                     new Object[]{joiner.toString()},
                     Locale.getDefault()
             );
-            throw new IllegalArgumentException(message);
+            throw new NoSuchElementException(message);
         }
     }
 

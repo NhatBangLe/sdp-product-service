@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
 import java.util.Locale;
+import java.util.NoSuchElementException;
 
 @Service
 @Validated
@@ -50,25 +51,25 @@ public class ModuleService {
 
     @NotNull
     @Cacheable(key = "#moduleId")
-    public Module getModule(@NotNull @UUID String moduleId) throws IllegalArgumentException {
+    public Module getModule(@NotNull @UUID String moduleId) throws NoSuchElementException {
         return findModule(moduleId);
     }
 
     private Module findModule(String moduleId)
-            throws IllegalArgumentException {
+            throws NoSuchElementException {
         return moduleRepository.findById(moduleId).orElseThrow(() -> {
             var message = messageSource.getMessage(
                     "module.not_found",
                     new Object[]{moduleId},
                     Locale.getDefault()
             );
-            return new IllegalArgumentException(message);
+            return new NoSuchElementException(message);
         });
     }
 
     @NotNull
     public Module createModule(@NotNull @Valid ModuleCreatingRequest request)
-            throws IllegalArgumentException, ServiceUnavailableException {
+            throws NoSuchElementException, ServiceUnavailableException {
         var productVersion = productVersionService.getVersion(request.productVersionId());
         var module = Module.builder()
                 .name(request.name())

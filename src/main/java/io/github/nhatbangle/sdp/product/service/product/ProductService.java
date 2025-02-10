@@ -53,24 +53,24 @@ public class ProductService {
     @NotNull
     @Cacheable(key = "#productId")
     public Product getProduct(@NotNull @UUID String productId)
-            throws IllegalArgumentException {
+            throws NoSuchElementException {
         return findProduct(productId);
     }
 
-    private Product findProduct(String productId) throws IllegalArgumentException {
+    private Product findProduct(String productId) throws NoSuchElementException {
         return productRepository.findById(productId).orElseThrow(() -> {
             var message = messageSource.getMessage(
                     "product.not_found",
                     new Object[]{productId},
                     Locale.getDefault()
             );
-            return new IllegalArgumentException(message);
+            return new NoSuchElementException(message);
         });
     }
 
     @NotNull
     public Product createProduct(@NotNull @Valid ProductCreatingRequest request)
-            throws IllegalArgumentException, ServiceUnavailableException {
+            throws ServiceUnavailableException {
         User user;
         var userId = request.userId();
         try {
@@ -92,7 +92,7 @@ public class ProductService {
     public Product updateProduct(
             @NotNull @UUID String productId,
             @NotNull @Valid ProductUpdatingRequest body
-    ) throws IllegalArgumentException {
+    ) throws NoSuchElementException {
         var product = findProduct(productId);
         product.setName(body.name());
         product.setDescription(body.description());

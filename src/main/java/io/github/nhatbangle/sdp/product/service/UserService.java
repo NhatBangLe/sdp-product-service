@@ -25,11 +25,12 @@ public class UserService {
      * Get a {@link User} by id
      * @param userId the id of the user
      * @return the user
-     * @throws IllegalArgumentException if the user is not found
+     * @throws NoSuchElementException if the user is not found
+     * @throws IllegalArgumentException if the user is not found at authenticate-service
      * @throws ServiceUnavailableException if the authentication service is unavailable
      */
     public User getUserById(@NotNull @UUID String userId)
-            throws NoSuchElementException, ServiceUnavailableException {
+            throws NoSuchElementException, IllegalArgumentException, ServiceUnavailableException {
         validateUserId(userId);
         return repository.findById(userId).orElseThrow(() -> {
                     var message = messageSource.getMessage(
@@ -60,7 +61,7 @@ public class UserService {
                     new Object[]{userId},
                     Locale.getDefault()
             );
-            throw new IllegalArgumentException(message);
+            throw new NoSuchElementException(message);
         }
     }
 

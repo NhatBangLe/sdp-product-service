@@ -4,6 +4,7 @@ import io.github.nhatbangle.sdp.product.dto.request.DocumentLabelUpdatingRequest
 import io.github.nhatbangle.sdp.product.entity.DocumentLabel;
 import io.github.nhatbangle.sdp.product.dto.request.DocumentLabelCreatingRequest;
 import io.github.nhatbangle.sdp.product.entity.User;
+import io.github.nhatbangle.sdp.product.exception.ServiceUnavailableException;
 import io.github.nhatbangle.sdp.product.repository.DocumentLabelRepository;
 import jakarta.annotation.Nullable;
 import jakarta.validation.ConstraintViolationException;
@@ -22,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
 import java.util.Locale;
+import java.util.NoSuchElementException;
 
 @Service
 @Validated
@@ -54,22 +56,22 @@ public class DocumentLabelService {
      *
      * @param labelId the id of the label
      * @return the label
-     * @throws IllegalArgumentException if the label is not found
+     * @throws NoSuchElementException if the label is not found
      */
     @NotNull
     @Cacheable(key = "#labelId")
-    public DocumentLabel getLabel(@NotNull @UUID String labelId) throws IllegalArgumentException {
+    public DocumentLabel getLabel(@NotNull @UUID String labelId) throws NoSuchElementException {
         return findLabel(labelId);
     }
 
-    private DocumentLabel findLabel(String labelId) throws IllegalArgumentException {
+    private DocumentLabel findLabel(String labelId) throws NoSuchElementException {
         return repository.findById(labelId).orElseThrow(() -> {
                     var message = messageSource.getMessage(
                             "document_label.not_found",
                             new Object[]{labelId},
                             Locale.getDefault()
                     );
-                    return new IllegalArgumentException(message);
+                    return new NoSuchElementException(message);
                 }
         );
     }
@@ -79,17 +81,16 @@ public class DocumentLabelService {
      *
      * @param request the information of the label
      * @return the created label
-     * @throws IllegalArgumentException     if the user is not found
-     * @throws ConstraintViolationException if the information is invalid
+     * @throws NoSuchElementException if the user is not found
      */
     @NotNull
     public DocumentLabel createLabel(@NotNull @Valid DocumentLabelCreatingRequest request)
-            throws IllegalArgumentException, ConstraintViolationException {
+            throws NoSuchElementException, ServiceUnavailableException {
         var userId = request.userId();
         User user;
         try {
             user = userService.getUserById(userId);
-        } catch (IllegalArgumentException e) {
+        } catch (NoSuchElementException e) {
             user = User.builder().id(userId).build();
         }
         var label = DocumentLabel.builder()
@@ -106,15 +107,14 @@ public class DocumentLabelService {
      * @param labelId the id of the label
      * @param request the new information of the label
      * @return the updated label
-     * @throws IllegalArgumentException     if the label is not found
-     * @throws ConstraintViolationException if the new information is invalid
+     * @throws NoSuchElementException if the label is not found
      */
     @NotNull
     @CachePut(key = "#labelId")
     public DocumentLabel updateLabel(
             @NotNull @UUID String labelId,
             @NotNull @Valid DocumentLabelUpdatingRequest request
-    ) throws IllegalArgumentException, ConstraintViolationException {
+    ) throws NoSuchElementException {
         var label = findLabel(labelId);
         label.setName(request.name());
         label.setDescription(request.description());

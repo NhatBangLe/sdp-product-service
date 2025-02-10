@@ -54,25 +54,25 @@ public class ProductChangelogService {
     @NotNull
     @Cacheable(key = "#changelogId")
     public ProductChangelog getChangelog(@NotNull @UUID String changelogId)
-            throws IllegalArgumentException {
+            throws NoSuchElementException {
         return findChangelog(changelogId);
     }
 
-    private ProductChangelog findChangelog(String changelogId) throws IllegalArgumentException {
+    private ProductChangelog findChangelog(String changelogId) throws NoSuchElementException {
         return changelogRepository.findById(changelogId).orElseThrow(() -> {
             var message = messageSource.getMessage(
                     "product_changelog.not_found",
                     new Object[]{changelogId},
                     Locale.getDefault()
             );
-            return new IllegalArgumentException(message);
+            return new NoSuchElementException(message);
         });
     }
 
     @NotNull
     public ProductChangelog createChangelog(
             @NotNull @Valid ProductChangelogCreatingRequest request
-    ) throws IllegalArgumentException {
+    ) throws NoSuchElementException {
         var productVersion = productVersionService.getVersion(request.productVersionId());
         var changelog = changelogRepository.save(ProductChangelog.builder()
                 .title(request.title())
@@ -94,7 +94,7 @@ public class ProductChangelogService {
     public ProductChangelog updateChangelog(
             @NotNull @UUID String changelogId,
             @NotNull @Valid ProductChangelogUpdatingRequest request
-    ) throws IllegalArgumentException {
+    ) throws NoSuchElementException {
         var changelog = findChangelog(changelogId);
         changelog.setTitle(request.title());
         changelog.setDescription(request.description());

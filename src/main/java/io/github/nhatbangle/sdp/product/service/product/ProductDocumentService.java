@@ -3,7 +3,6 @@ package io.github.nhatbangle.sdp.product.service.product;
 import io.github.nhatbangle.sdp.product.dto.request.product.ProductDocumentCreatingRequest;
 import io.github.nhatbangle.sdp.product.dto.request.product.ProductDocumentUpdatingRequest;
 import io.github.nhatbangle.sdp.product.entity.Attachment;
-import io.github.nhatbangle.sdp.product.entity.DocumentLabel;
 import io.github.nhatbangle.sdp.product.entity.id.ProductDocumentHasAttachmentId;
 import io.github.nhatbangle.sdp.product.entity.id.ProductDocumentHasDocumentLabelId;
 import io.github.nhatbangle.sdp.product.entity.product.ProductDocument;
@@ -13,6 +12,7 @@ import io.github.nhatbangle.sdp.product.exception.DataConflictException;
 import io.github.nhatbangle.sdp.product.exception.ServiceUnavailableException;
 import io.github.nhatbangle.sdp.product.repository.product.ProductDocumentRepository;
 import io.github.nhatbangle.sdp.product.service.AttachmentService;
+import io.github.nhatbangle.sdp.product.service.DocumentLabelService;
 import io.github.nhatbangle.sdp.product.service.UserService;
 import jakarta.annotation.Nullable;
 import jakarta.validation.Valid;
@@ -43,6 +43,7 @@ public class ProductDocumentService {
     private final ProductDocumentRepository documentRepository;
     private final ProductService productService;
     private final AttachmentService attachmentService;
+    private final DocumentLabelService documentLabelService;
 
     @NotNull
     public Page<ProductDocument> queryAllDocuments(
@@ -62,24 +63,24 @@ public class ProductDocumentService {
     @NotNull
     @Cacheable(key = "#documentId")
     public ProductDocument getDocument(@NotNull @UUID String documentId)
-            throws IllegalArgumentException {
+            throws NoSuchElementException {
         return findDocument(documentId);
     }
 
-    private ProductDocument findDocument(String documentId) throws IllegalArgumentException {
+    private ProductDocument findDocument(String documentId) throws NoSuchElementException {
         return documentRepository.findById(documentId).orElseThrow(() -> {
             var message = messageSource.getMessage(
                     "product_document.not_found",
                     new Object[]{documentId},
                     Locale.getDefault()
             );
-            return new IllegalArgumentException(message);
+            return new NoSuchElementException(message);
         });
     }
 
     @NotNull
     public ProductDocument createDocument(@NotNull @Valid ProductDocumentCreatingRequest request)
-            throws IllegalArgumentException, ServiceUnavailableException {
+            throws NoSuchElementException, ServiceUnavailableException {
         var user = userService.getUserById(request.userId());
         var documentBuilder = ProductDocument.builder()
                 .title(request.title())
@@ -87,12 +88,8 @@ public class ProductDocumentService {
                 .user(user);
         var productId = request.productId();
         if (productId != null) {
-            try {
-                var product = productService.getProduct(productId);
-                documentBuilder.product(product);
-            } catch (IllegalArgumentException e) {
-                documentBuilder.product(null);
-            }
+            var product = productService.getProduct(productId);
+            documentBuilder.product(product);
         }
 
         var isUpdated = false;
@@ -116,7 +113,7 @@ public class ProductDocumentService {
     private Set<ProductDocumentHasAttachment> convertIdToAttachment(
             @NotNull ProductDocument document,
             @NotNull Set<String> attachmentIds
-    ) throws IllegalArgumentException, DataConflictException {
+    ) throws NoSuchElementException, DataConflictException {
         var savedDocumentId = document.getId();
         if (savedDocumentId == null) {
             var message = messageSource.getMessage(
@@ -147,7 +144,7 @@ public class ProductDocumentService {
     private Set<ProductDocumentHasDocumentLabel> convertIdToLabel(
             @NotNull ProductDocument document,
             @NotNull List<String> labelIds
-    ) throws IllegalArgumentException, DataConflictException {
+    ) throws NoSuchElementException, DataConflictException {
         var savedDocumentId = document.getId();
         if (savedDocumentId == null) {
             var message = messageSource.getMessage(
@@ -163,17 +160,19 @@ public class ProductDocumentService {
 
         for (int i = 0; i < arrSize; i++) {
             var labelId = labelIds.get(i);
+            var label = documentLabelService.getLabel(labelId);
+
             var id = ProductDocumentHasDocumentLabelId.builder()
                     .labelId(labelId)
                     .documentId(savedDocumentId)
                     .build();
-            var label = ProductDocumentHasDocumentLabel.builder()
+            var proLabel = ProductDocumentHasDocumentLabel.builder()
                     .id(id)
                     .document(document)
                     .numOrder((short) i)
-                    .label(DocumentLabel.builder().id(labelId).build())
+                    .label(label)
                     .build();
-            labels.add(label);
+            labels.add(proLabel);
         }
         return labels;
     }
@@ -183,7 +182,7 @@ public class ProductDocumentService {
     public ProductDocument updateDocument(
             @NotNull @UUID String documentId,
             @NotNull @Valid ProductDocumentUpdatingRequest request
-    ) throws IllegalArgumentException {
+    ) throws NoSuchElementException {
         var document = findDocument(documentId);
 
         document.setTitle(request.title());
@@ -191,13 +190,9 @@ public class ProductDocumentService {
 
         var productId = request.productId();
         if (productId != null) {
-            try {
-                var product = productService.getProduct(productId);
-                document.setProduct(product);
-            } catch (IllegalArgumentException e) {
-                document.setProduct(null);
-            }
-        }
+            var product = productService.getProduct(productId);
+            document.setProduct(product);
+        } else document.setProduct(null);
 
         var attachmentIds = request.attachmentIds();
         if (attachmentIds != null && !attachmentIds.isEmpty()) {

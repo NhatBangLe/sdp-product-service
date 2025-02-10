@@ -3,7 +3,6 @@ package io.github.nhatbangle.sdp.product.service.module;
 import io.github.nhatbangle.sdp.product.dto.request.module.ModuleDocumentCreatingRequest;
 import io.github.nhatbangle.sdp.product.dto.request.module.ModuleDocumentUpdatingRequest;
 import io.github.nhatbangle.sdp.product.entity.Attachment;
-import io.github.nhatbangle.sdp.product.entity.DocumentLabel;
 import io.github.nhatbangle.sdp.product.entity.id.ModuleDocumentHasAttachmentId;
 import io.github.nhatbangle.sdp.product.entity.id.ModuleDocumentHasDocumentLabelId;
 import io.github.nhatbangle.sdp.product.entity.module.ModuleDocument;
@@ -13,6 +12,7 @@ import io.github.nhatbangle.sdp.product.exception.DataConflictException;
 import io.github.nhatbangle.sdp.product.exception.ServiceUnavailableException;
 import io.github.nhatbangle.sdp.product.repository.module.ModuleDocumentRepository;
 import io.github.nhatbangle.sdp.product.service.AttachmentService;
+import io.github.nhatbangle.sdp.product.service.DocumentLabelService;
 import io.github.nhatbangle.sdp.product.service.UserService;
 import jakarta.annotation.Nullable;
 import jakarta.validation.Valid;
@@ -29,10 +29,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -46,6 +43,7 @@ public class ModuleDocumentService {
     private final ModuleDocumentRepository documentRepository;
     private final ModuleService moduleService;
     private final AttachmentService attachmentService;
+    private final DocumentLabelService documentLabelService;
 
     @NotNull
     public Page<ModuleDocument> queryAllDocuments(
@@ -65,24 +63,24 @@ public class ModuleDocumentService {
     @NotNull
     @Cacheable(key = "#documentId")
     public ModuleDocument getDocument(@NotNull @UUID String documentId)
-            throws IllegalArgumentException {
+            throws NoSuchElementException {
         return findDocument(documentId);
     }
 
-    private ModuleDocument findDocument(String documentId) throws IllegalArgumentException {
+    private ModuleDocument findDocument(String documentId) throws NoSuchElementException {
         return documentRepository.findById(documentId).orElseThrow(() -> {
             var message = messageSource.getMessage(
                     "module_document.not_found",
                     new Object[]{documentId},
                     Locale.getDefault()
             );
-            return new IllegalArgumentException(message);
+            return new NoSuchElementException(message);
         });
     }
 
     @NotNull
     public ModuleDocument createDocument(@NotNull @Valid ModuleDocumentCreatingRequest request)
-            throws IllegalArgumentException, ServiceUnavailableException {
+            throws NoSuchElementException, ServiceUnavailableException {
         var user = userService.getUserById(request.userId());
         var documentBuilder = ModuleDocument.builder()
                 .title(request.title())
@@ -90,12 +88,8 @@ public class ModuleDocumentService {
                 .user(user);
         var moduleId = request.moduleId();
         if (moduleId != null) {
-            try {
-                var module = moduleService.getModule(moduleId);
-                documentBuilder.module(module);
-            } catch (IllegalArgumentException e) {
-                documentBuilder.module(null);
-            }
+            var module = moduleService.getModule(moduleId);
+            documentBuilder.module(module);
         }
 
         var isUpdated = false;
@@ -119,7 +113,7 @@ public class ModuleDocumentService {
     private Set<ModuleDocumentHasAttachment> convertIdToAttachment(
             @NotNull ModuleDocument document,
             @NotNull Set<String> attachmentIds
-    ) throws IllegalArgumentException, DataConflictException {
+    ) throws NoSuchElementException, DataConflictException {
         var savedDocumentId = document.getId();
         if (savedDocumentId == null) {
             var message = messageSource.getMessage(
@@ -150,7 +144,7 @@ public class ModuleDocumentService {
     private Set<ModuleDocumentHasDocumentLabel> convertIdToLabel(
             @NotNull ModuleDocument document,
             @NotNull List<String> labelIds
-    ) throws IllegalArgumentException, DataConflictException {
+    ) throws NoSuchElementException, DataConflictException {
         var savedDocumentId = document.getId();
         if (savedDocumentId == null) {
             var message = messageSource.getMessage(
@@ -166,17 +160,19 @@ public class ModuleDocumentService {
 
         for (int i = 0; i < arrSize; i++) {
             var labelId = labelIds.get(i);
+            var label = documentLabelService.getLabel(labelId);
+
             var id = ModuleDocumentHasDocumentLabelId.builder()
                     .labelId(labelId)
                     .documentId(savedDocumentId)
                     .build();
-            var label = ModuleDocumentHasDocumentLabel.builder()
+            var modLabel = ModuleDocumentHasDocumentLabel.builder()
                     .id(id)
                     .document(document)
                     .numOrder((short) i)
-                    .label(DocumentLabel.builder().id(labelId).build())
+                    .label(label)
                     .build();
-            labels.add(label);
+            labels.add(modLabel);
         }
         return labels;
     }
@@ -186,7 +182,7 @@ public class ModuleDocumentService {
     public ModuleDocument updateDocument(
             @NotNull @UUID String documentId,
             @NotNull @Valid ModuleDocumentUpdatingRequest request
-    ) throws IllegalArgumentException {
+    ) throws NoSuchElementException {
         var document = findDocument(documentId);
 
         document.setTitle(request.title());
@@ -194,13 +190,9 @@ public class ModuleDocumentService {
 
         var moduleId = request.moduleId();
         if (moduleId != null) {
-            try {
-                var product = moduleService.getModule(moduleId);
-                document.setModule(product);
-            } catch (IllegalArgumentException e) {
-                document.setModule(null);
-            }
-        }
+            var module = moduleService.getModule(moduleId);
+            document.setModule(module);
+        } else document.setModule(null);
 
         var attachmentIds = request.attachmentIds();
         if (attachmentIds != null && !attachmentIds.isEmpty()) {

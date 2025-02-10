@@ -28,6 +28,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
 import java.util.Locale;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -58,11 +59,11 @@ public class InstanceService {
 
     @NotNull
     @Cacheable(key = "#instanceId")
-    public Instance getInstance(@NotNull @UUID String instanceId) throws IllegalArgumentException {
+    public Instance getInstance(@NotNull @UUID String instanceId) throws NoSuchElementException {
         return findInstance(instanceId);
     }
 
-    private Instance findInstance(String instanceId) throws IllegalArgumentException {
+    private Instance findInstance(String instanceId) throws NoSuchElementException {
         return repository.findById(instanceId)
                 .orElseThrow(() -> {
                     var message = messageSource.getMessage(
@@ -70,14 +71,14 @@ public class InstanceService {
                             new Object[]{instanceId},
                             Locale.getDefault()
                     );
-                    return new IllegalArgumentException(message);
+                    return new NoSuchElementException(message);
                 });
     }
 
     @NotNull
     public Instance createInstance(
             @NotNull @Valid InstanceCreatingRequest request
-    ) throws IllegalArgumentException {
+    ) throws NoSuchElementException {
         var moduleVersion = moduleVersionService.getVersion(request.moduleVersionId());
         var instance = repository.save(Instance.builder()
                 .name(request.name())
@@ -99,7 +100,7 @@ public class InstanceService {
     public Instance updateInstance(
             @NotNull @UUID String instanceId,
             @NotNull @Valid InstanceUpdatingRequest request
-    ) throws IllegalArgumentException {
+    ) throws NoSuchElementException {
         var instance = findInstance(instanceId);
         instance.setName(request.name());
         instance.setDescription(request.description());
@@ -113,7 +114,7 @@ public class InstanceService {
 
     @Transactional
     public void alertInstance(@NotNull @Valid InstanceAlertRequest request)
-            throws InvalidKeyException, IllegalArgumentException {
+            throws InvalidKeyException, NoSuchElementException {
         var instanceId = request.instanceId();
         var instance = findInstance(instanceId);
 
