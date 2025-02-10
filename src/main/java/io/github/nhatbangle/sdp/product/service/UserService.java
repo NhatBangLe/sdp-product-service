@@ -3,13 +3,18 @@ package io.github.nhatbangle.sdp.product.service;
 import io.github.nhatbangle.sdp.product.entity.User;
 import io.github.nhatbangle.sdp.product.exception.ServiceUnavailableException;
 import io.github.nhatbangle.sdp.product.repository.UserRepository;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.validator.constraints.UUID;
 import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
 
 import java.util.Locale;
+import java.util.NoSuchElementException;
 
 @Service
+@Validated
 @RequiredArgsConstructor
 public class UserService {
 
@@ -23,7 +28,8 @@ public class UserService {
      * @throws IllegalArgumentException if the user is not found
      * @throws ServiceUnavailableException if the authentication service is unavailable
      */
-    public User getUserById(String userId) throws IllegalArgumentException, ServiceUnavailableException {
+    public User getUserById(@NotNull @UUID String userId)
+            throws NoSuchElementException, ServiceUnavailableException {
         validateUserId(userId);
         return repository.findById(userId).orElseThrow(() -> {
                     var message = messageSource.getMessage(
@@ -31,12 +37,12 @@ public class UserService {
                             new Object[]{userId},
                             Locale.getDefault()
                     );
-                    return new IllegalArgumentException(message);
+                    return new NoSuchElementException(message);
                 }
         );
     }
 
-    public boolean isUserAvailable(String userId) throws ServiceUnavailableException {
+    public boolean isUserAvailable(@NotNull @UUID String userId) throws ServiceUnavailableException {
         return true;
     }
 
@@ -46,7 +52,7 @@ public class UserService {
      * @throws IllegalArgumentException if the user is not found
      * @throws ServiceUnavailableException if the authentication service is unavailable
      */
-    public void validateUserId(String userId)
+    public void validateUserId(@NotNull @UUID String userId)
             throws IllegalArgumentException, ServiceUnavailableException {
         if (!isUserAvailable(userId)) {
             var message = messageSource.getMessage(
