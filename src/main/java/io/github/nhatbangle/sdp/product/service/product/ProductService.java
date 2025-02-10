@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
 import java.util.Locale;
+import java.util.NoSuchElementException;
 
 @Service
 @Validated
@@ -70,14 +71,18 @@ public class ProductService {
     @NotNull
     public Product createProduct(@NotNull @Valid ProductCreatingRequest request)
             throws IllegalArgumentException, ServiceUnavailableException {
+        User user;
         var userId = request.userId();
-        userService.validateUserId(userId);
+        try {
+            user = userService.getUserById(userId);
+        } catch (NoSuchElementException e) {
+            user = User.builder().id(userId).build();
+        }
+
         var product = Product.builder()
                 .name(request.name())
                 .description(request.description())
-                .user(User.builder()
-                        .id(userId)
-                        .build())
+                .user(user)
                 .build();
         return productRepository.save(product);
     }
