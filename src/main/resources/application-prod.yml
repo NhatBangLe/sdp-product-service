@@ -1,0 +1,6 @@
+logging:
+  file:
+    name: ./logs/sdp-product.log
+  level:
+    root: ${LOG_LEVEL_ROOT:info}
+    web: ${LOG_LEVEL_WEB:info}
