@@ -7,7 +7,6 @@ import io.github.nhatbangle.sdp.product.entity.User;
 import io.github.nhatbangle.sdp.product.exception.ServiceUnavailableException;
 import io.github.nhatbangle.sdp.product.repository.DocumentLabelRepository;
 import jakarta.annotation.Nullable;
-import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
@@ -93,12 +92,16 @@ public class DocumentLabelService {
         } catch (NoSuchElementException e) {
             user = User.builder().id(userId).build();
         }
-        var label = DocumentLabel.builder()
+
+        var labelBuilder = DocumentLabel.builder()
                 .name(request.name())
                 .description(request.description())
-                .user(user)
-                .build();
-        return repository.save(label);
+                .user(user);
+
+        var color = request.color();
+        if (color != null) labelBuilder.color(color);
+
+        return repository.save(labelBuilder.build());
     }
 
     /**
@@ -118,6 +121,7 @@ public class DocumentLabelService {
         var label = findLabel(labelId);
         label.setName(request.name());
         label.setDescription(request.description());
+        label.setColor(request.color());
         return repository.save(label);
     }
 
