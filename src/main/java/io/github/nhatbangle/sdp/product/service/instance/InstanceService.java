@@ -115,12 +115,12 @@ public class InstanceService {
 
     public String generateSecretKey(@NotNull @UUID String instanceId) throws NoSuchElementException {
         var instance = findInstance(instanceId);
-        var key = KeyEncryption.crypt(java.util.UUID.randomUUID().toString());
+        var key = java.util.UUID.randomUUID().toString();
 
         instance.setSecretKey(key);
         repository.save(instance);
 
-        return key;
+        return KeyEncryption.crypt(key);
     }
 
     @Transactional
