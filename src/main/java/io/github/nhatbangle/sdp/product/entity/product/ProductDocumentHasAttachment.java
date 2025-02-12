@@ -37,7 +37,7 @@ public class ProductDocumentHasAttachment implements Serializable {
 
     @NotNull
     @MapsId("attachmentId")
-    @ManyToOne(optional = false, cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
+    @ManyToOne(optional = false, cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE})
     @JoinColumn(name = "ATTACHMENT_id", nullable = false, updatable = false)
     private Attachment attachment;
 
