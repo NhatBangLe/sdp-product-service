@@ -7,7 +7,6 @@ import io.github.nhatbangle.sdp.product.dto.request.instance.InstanceUpdatingReq
 import io.github.nhatbangle.sdp.product.dto.response.InstanceResponse;
 import io.github.nhatbangle.sdp.product.mapper.InstanceMapper;
 import io.github.nhatbangle.sdp.product.service.instance.InstanceService;
-import io.github.nhatbangle.sdp.product.util.KeyEncryption;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -52,10 +51,10 @@ public class InstanceController {
 
     @GetMapping("/{instanceId}/secret")
     @ResponseStatus(HttpStatus.OK)
-    public String getInstanceSecret(
+    public String generateSecretKey(
             @PathVariable @UUID String instanceId
     ) {
-        return KeyEncryption.crypt(instanceId);
+        return service.generateSecretKey(instanceId);
     }
 
     @PostMapping("/alert")

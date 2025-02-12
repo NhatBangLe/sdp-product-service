@@ -4,6 +4,7 @@ import io.github.nhatbangle.sdp.product.dto.response.InstanceAttributeResponse;
 import io.github.nhatbangle.sdp.product.dto.response.InstanceResponse;
 import io.github.nhatbangle.sdp.product.entity.instance.Instance;
 import io.github.nhatbangle.sdp.product.entity.instance.InstanceAttribute;
+import io.github.nhatbangle.sdp.product.util.KeyEncryption;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.validation.annotation.Validated;
 
@@ -18,6 +19,7 @@ public class InstanceMapper implements IEntityMapper<Instance, InstanceResponse>
         var attributes = entity.getAttributes();
         return new InstanceResponse(
                 entity.getId(),
+                KeyEncryption.crypt(entity.getSecretKey()),
                 entity.getIsUsed(),
                 entity.getName(),
                 entity.getDescription(),

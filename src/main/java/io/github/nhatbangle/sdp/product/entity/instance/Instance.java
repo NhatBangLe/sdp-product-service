@@ -50,6 +50,12 @@ public class Instance implements Serializable {
     @Column(name = "description")
     private String description;
 
+    @NotNull
+    @NotBlank
+    @Size(max = 36)
+    @Column(name = "secret_key", nullable = false, length = 36)
+    private String secretKey;
+
     @Version
     @Column(name = "version", nullable = false)
     private long version;

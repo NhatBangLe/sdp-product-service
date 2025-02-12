@@ -84,6 +84,7 @@ public class InstanceService {
                 .name(request.name())
                 .description(request.description())
                 .moduleVersion(moduleVersion)
+                .secretKey(java.util.UUID.randomUUID().toString())
                 .build());
 
         var attRqs = request.attributes();
@@ -112,13 +113,23 @@ public class InstanceService {
         repository.deleteById(instanceId);
     }
 
+    public String generateSecretKey(@NotNull @UUID String instanceId) throws NoSuchElementException {
+        var instance = findInstance(instanceId);
+        var key = KeyEncryption.crypt(java.util.UUID.randomUUID().toString());
+
+        instance.setSecretKey(key);
+        repository.save(instance);
+
+        return key;
+    }
+
     @Transactional
     public void alertInstance(@NotNull @Valid InstanceAlertRequest request)
             throws InvalidKeyException, NoSuchElementException {
         var instanceId = request.instanceId();
         var instance = findInstance(instanceId);
 
-        if (!KeyEncryption.compare(request.secretKey(), KeyEncryption.crypt(instanceId))) {
+        if (!KeyEncryption.compare(request.secretKey(), KeyEncryption.crypt(instance.getSecretKey()))) {
             var message = messageSource.getMessage(
                     "instance.invalid_key",
                     new Object[]{instanceId},

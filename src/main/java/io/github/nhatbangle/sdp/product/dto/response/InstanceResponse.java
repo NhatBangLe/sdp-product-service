@@ -10,6 +10,7 @@ import java.util.List;
  */
 public record InstanceResponse(
         String id,
+        String secretKey,
         boolean isUsed,
         String name,
         @Nullable String description,
